@@ -3,10 +3,10 @@ import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, LockKeyhole, ShieldC
 import { useNavigate } from 'react-router-dom'
 import logo from '../../../assets/images/FoMed_Logo.png'
 import { ApiError } from '../../../shared/api/api-error'
-import { AuthField } from '../components/AuthField'
-import { authApi } from '../api/auth.api'
-import { useAuth } from '../hooks/useAuth'
-import { getRoleHome } from '../utils/get-role-home'
+import { AuthField } from '../../../features/auth/components/AuthField'
+import { authApi } from '../../../features/auth/api/auth-api'
+import { useAuth } from '../../../features/auth/hooks/useAuth'
+import { getRoleHome } from '../../../routes/role-home'
 
 export default function ChangePasswordPage() {
   const navigate = useNavigate()

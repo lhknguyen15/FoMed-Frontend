@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import logo from '../assets/images/FoMed_Logo.png'
-import { useAuth } from '../modules/auth/hooks/useAuth'
+import { useAuth } from '../features/auth/hooks/useAuth'
 
 export default function ProtectedRoute() {
   const { isAuthenticated, isReady } = useAuth()

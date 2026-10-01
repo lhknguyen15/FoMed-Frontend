@@ -3,9 +3,9 @@ import { AlertCircle, ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../../assets/images/FoMed_Logo.png'
 import { ApiError } from '../../../shared/api/api-error'
-import { AuthField } from '../components/AuthField'
-import { useAuth } from '../hooks/useAuth'
-import { getRoleHome } from '../utils/get-role-home'
+import { AuthField } from '../../../features/auth/components/AuthField'
+import { useAuth } from '../../../features/auth/hooks/useAuth'
+import { getRoleHome } from '../../../routes/role-home'
 
 export default function LoginPage() {
   const navigate = useNavigate()

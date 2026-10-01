@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { authApi } from '../api/auth.api'
+import { authApi } from '../api/auth-api'
 import {
   clearStoredSession,
   getStoredSession,

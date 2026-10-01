@@ -1,7 +1,7 @@
 import {
-  Activity, CalendarDays, ClipboardList, Clock3, FileText, FlaskConical,
-  LayoutDashboard, PackageOpen, Pill, ReceiptText, ShieldCheck, Stethoscope,
-  UserRound, UsersRound, WalletCards,
+  Activity, BarChart3, CalendarDays, CalendarOff, ClipboardList, Clock3, FileText, FlaskConical,
+  HeartPulse, LayoutDashboard, PackageOpen, Pill, ReceiptText, ShieldCheck, Stethoscope,
+  UserCog, UserRound, UsersRound, WalletCards,
 } from 'lucide-react'
 import type { NavItem, Role } from '../types'
 
@@ -11,7 +11,7 @@ export const roleHome: Record<Role, string> = {
   'Bác sĩ': '/doctor/queue',
   'Kỹ thuật viên': '/technician/orders',
   'Dược sĩ': '/pharmacy/inventory',
-  'Quản trị': '/admin/reports',
+  'Quản trị': '/admin/dashboard',
 }
 
 export const roleNavigation: Record<Role, NavItem[]> = {
@@ -44,11 +44,14 @@ export const roleNavigation: Record<Role, NavItem[]> = {
     { label: 'Nhập thuốc', path: '/pharmacy/receipt', icon: ReceiptText },
   ],
   'Quản trị': [
-    { label: 'Tổng quan', path: '/admin/reports', icon: LayoutDashboard },
-    { label: 'Bác sĩ & chuyên khoa', path: '/admin/doctors', icon: Stethoscope },
-    { label: 'Lịch làm việc', path: '/admin/schedules', icon: CalendarDays },
+    { label: 'Tổng quan', path: '/admin/dashboard', icon: LayoutDashboard },
+    { label: 'Bác sĩ', path: '/admin/doctors', icon: Stethoscope },
+    { label: 'Chuyên khoa', path: '/admin/specialties', icon: HeartPulse },
+    { label: 'Lịch nghỉ', path: '/admin/time-off', icon: CalendarOff },
     { label: 'Danh mục dịch vụ', path: '/admin/services', icon: Activity },
-    { label: 'Người dùng & vai trò', path: '/admin/users', icon: UserRound },
+    { label: 'Người dùng', path: '/admin/users', icon: UserRound },
+    { label: 'Vai trò', path: '/admin/roles', icon: UserCog },
+    { label: 'Báo cáo', path: '/admin/reports', icon: BarChart3 },
     { label: 'Nhật ký hệ thống', path: '/admin/audit-logs', icon: ShieldCheck },
   ],
 }

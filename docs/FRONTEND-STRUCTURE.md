@@ -21,6 +21,7 @@ src/
 
 ```text
 workspaces/
+├── auth/          # Các trang đăng nhập, đăng ký và tài khoản
 ├── public/        # Khách chưa đăng nhập
 ├── patient/       # Bệnh nhân
 ├── reception/     # Lễ tân
@@ -90,7 +91,7 @@ shared
 
 ## Prototype hiện tại
 
-- `src/modules/auth` là vertical slice đầu tiên đã được triển khai đầy đủ UI, API, session và route guard.
+- Auth đã được chuẩn hóa: page ở `src/workspaces/auth`, nghiệp vụ ở `src/features/auth`, layout ở `src/layouts/AuthLayout.tsx` và điều hướng vai trò ở `src/routes/role-home.ts`.
 - `src/workspaces/WorkspacePages.tsx` tạm thời chứa composition của các workspace đang hoạt động.
 - `src/App.tsx`, `src/components` và `src/data` vẫn phục vụ prototype hiện tại.
 
