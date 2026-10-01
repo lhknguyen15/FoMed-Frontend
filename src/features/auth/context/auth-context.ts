@@ -1,6 +1,6 @@
 import { createContext } from 'react'
 import type { SessionUser } from '../../../shared/api/token-storage'
-import type { LoginRequest, RegisterPatientRequest } from '../types/auth.types'
+import type { LoginRequest, RegisterPatientRequest } from '../types/auth'
 
 export type AuthContextValue = {
   user: SessionUser | null

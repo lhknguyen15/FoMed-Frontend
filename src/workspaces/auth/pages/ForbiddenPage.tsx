@@ -1,7 +1,7 @@
 import { ArrowLeft, LogOut, ShieldX } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
-import { getRoleHome } from '../utils/get-role-home'
+import { useAuth } from '../../../features/auth/hooks/useAuth'
+import { getRoleHome } from '../../../routes/role-home'
 
 export default function ForbiddenPage() {
   const navigate = useNavigate()

@@ -1,5 +1,5 @@
 import { apiRequest, apiRequestResult } from '../../../shared/api/http-client'
-import type { AuthResponse, LoginRequest, RegisterPatientRequest } from '../types/auth.types'
+import type { AdminRole, AdminUserPage, AuthResponse, LoginRequest, RegisterPatientRequest } from '../types/auth'
 
 export const authApi = {
   login: (request: LoginRequest) => apiRequest<AuthResponse>('/auth/login', {
@@ -30,4 +30,12 @@ export const authApi = {
     })
     return result.message
   },
+
+  adminUsers: (filters: { search?: string; page?: number; pageSize?: number } = {}) => {
+    const params = new URLSearchParams({ page: String(filters.page ?? 1), pageSize: String(filters.pageSize ?? 20) })
+    if (filters.search) params.set('search', filters.search)
+    return apiRequest<AdminUserPage>(`/admin/users?${params}`)
+  },
+
+  adminRoles: () => apiRequest<AdminRole[]>('/admin/roles'),
 }

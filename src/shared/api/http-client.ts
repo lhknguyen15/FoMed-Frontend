@@ -42,5 +42,13 @@ export async function apiRequestResult<T>(path: string, options: RequestOptions 
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  return (await apiRequestResult<T>(path, options)).dataResponse
+  const payload = await apiRequestResult<T>(path, options) as unknown
+  if (payload && typeof payload === 'object' && 'dataResponse' in payload) {
+    return (payload as ApiResponse<T>).dataResponse
+  }
+
+  // Một số endpoint cũ của FoMed API (reports, audit logs, time-off) trả
+  // payload trực tiếp thay vì HTTPResponseData. Giữ adapter ở hạ tầng để
+  // các module không phải tự xử lý hai kiểu response.
+  return payload as T
 }

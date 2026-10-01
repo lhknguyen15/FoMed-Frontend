@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../../../shared/api/api-error'
-import { AuthField } from '../components/AuthField'
-import { useAuth } from '../hooks/useAuth'
+import { AuthField } from '../../../features/auth/components/AuthField'
+import { useAuth } from '../../../features/auth/hooks/useAuth'
 
 export default function ForgotPasswordPage() {
   const { forgotPassword } = useAuth()

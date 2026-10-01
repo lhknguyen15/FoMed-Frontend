@@ -3,8 +3,8 @@ import { AlertCircle, ArrowLeft, ArrowRight, CalendarDays, Eye, EyeOff, LockKeyh
 import { Link, useNavigate } from 'react-router-dom'
 import logo from '../../../assets/images/FoMed_Logo.png'
 import { ApiError } from '../../../shared/api/api-error'
-import { AuthField } from '../components/AuthField'
-import { useAuth } from '../hooks/useAuth'
+import { AuthField } from '../../../features/auth/components/AuthField'
+import { useAuth } from '../../../features/auth/hooks/useAuth'
 
 type FormState = { fullName: string; phone: string; email: string; dateOfBirth: string; password: string; confirmPassword: string }
 const initialForm: FormState = { fullName: '', phone: '', email: '', dateOfBirth: '', password: '', confirmPassword: '' }

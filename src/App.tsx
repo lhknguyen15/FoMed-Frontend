@@ -1,14 +1,24 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import AuthLayout from "./modules/auth/layouts/AuthLayout";
-import LoginPage from "./modules/auth/pages/LoginPage";
-import RegisterPage from "./modules/auth/pages/RegisterPage";
-import ForgotPasswordPage from "./modules/auth/pages/ForgotPasswordPage";
-import ForbiddenPage from "./modules/auth/pages/ForbiddenPage";
-import ChangePasswordPage from "./modules/auth/pages/ChangePasswordPage";
+import AuthLayout from "./layouts/AuthLayout";
+import LoginPage from "./workspaces/auth/pages/LoginPage";
+import RegisterPage from "./workspaces/auth/pages/RegisterPage";
+import ForgotPasswordPage from "./workspaces/auth/pages/ForgotPasswordPage";
+import ForbiddenPage from "./workspaces/auth/pages/ForbiddenPage";
+import ChangePasswordPage from "./workspaces/auth/pages/ChangePasswordPage";
 import WorkspacePages from "./workspaces/WorkspacePages";
 import GuestRoute from "./routes/GuestRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RoleRoute from "./routes/RoleRoute";
+import CMSLayout from "./layouts/CMSLayout";
+import AdminDashboardPage from "./cms/dashboard/pages/AdminDashboardPage";
+import DoctorManagementPage from "./cms/doctors/pages/DoctorManagementPage";
+import SpecialtyManagementPage from "./cms/specialties/pages/SpecialtyManagementPage";
+import TimeOffManagementPage from "./cms/time-off/pages/TimeOffManagementPage";
+import ServiceManagementPage from "./cms/services/pages/ServiceManagementPage";
+import UserManagementPage from "./cms/users/pages/UserManagementPage";
+import RoleManagementPage from "./cms/roles/pages/RoleManagementPage";
+import AdminReportPage from "./cms/reports/pages/AdminReportPage";
+import AuditLogPage from "./cms/audit/pages/AuditLogPage";
 
 const patientRoutes = [
   "/booking",
@@ -35,15 +45,6 @@ const pharmacyRoutes = [
   "/pharmacy/dispense/:prescriptionId",
   "/pharmacy/receipt",
 ];
-const adminRoutes = [
-  "/admin/doctors",
-  "/admin/schedules",
-  "/admin/services",
-  "/admin/users",
-  "/admin/reports",
-  "/admin/audit-logs",
-];
-
 export default function App() {
   return (
     <Routes>
@@ -84,9 +85,17 @@ export default function App() {
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Admin"]} />}>
-          {adminRoutes.map((path) => (
-            <Route key={path} path={path} element={<WorkspacePages />} />
-          ))}
+          <Route element={<CMSLayout />}>
+            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+            <Route path="/admin/doctors" element={<DoctorManagementPage />} />
+            <Route path="/admin/specialties" element={<SpecialtyManagementPage />} />
+            <Route path="/admin/time-off" element={<TimeOffManagementPage />} />
+            <Route path="/admin/services" element={<ServiceManagementPage />} />
+            <Route path="/admin/users" element={<UserManagementPage />} />
+            <Route path="/admin/roles" element={<RoleManagementPage />} />
+            <Route path="/admin/reports" element={<AdminReportPage />} />
+            <Route path="/admin/audit-logs" element={<AuditLogPage />} />
+          </Route>
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />

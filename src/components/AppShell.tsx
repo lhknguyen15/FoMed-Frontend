@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Bell, ChevronDown, HelpCircle, LogOut, Menu, PanelLeftClose, Search, Settings, X } from 'lucide-react'
 import { roleHome, roleNavigation } from '../data/navigation'
 import type { Role } from '../types'
-import { useAuth } from '../modules/auth/hooks/useAuth'
+import { useAuth } from '../features/auth/hooks/useAuth'
 import logo from '../assets/images/FoMed_Logo.png'
 
 const roleLabels: Role[] = ['Bệnh nhân', 'Lễ tân', 'Bác sĩ', 'Kỹ thuật viên', 'Dược sĩ', 'Quản trị']
