@@ -33,6 +33,10 @@ export async function apiRequestResult<T>(path: string, options: RequestOptions 
     return apiRequestResult<T>(path, { ...options, retryAuth: false })
   }
 
+  if (response.status === 204) {
+    return { dataResponse: null, message: '', statusCode: response.status } as ApiResponse<T>
+  }
+
   const payload = await response.json().catch(() => null) as (ApiResponse<T> & ErrorPayload) | null
   if (!response.ok) {
     throw new ApiError(getErrorMessage(payload), response.status, payload)
