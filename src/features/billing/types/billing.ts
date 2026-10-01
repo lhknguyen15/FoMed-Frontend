@@ -9,3 +9,16 @@ export type MedicalService = {
   durationMinutes: number
   isActive: boolean
 }
+
+export type CreateMedicalServiceInput = {
+  code?: string
+  name: string
+  description?: string
+  price: number
+  specialtyId?: number
+  durationMinutes: number
+}
+
+export type UpdateMedicalServiceInput = CreateMedicalServiceInput & {
+  isActive: boolean
+}
