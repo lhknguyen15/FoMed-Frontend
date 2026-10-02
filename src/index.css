@@ -20,6 +20,15 @@ button { cursor: pointer; }
 .input-base { width: 100%; min-height: 44px; border-radius: .75rem; border: 1px solid #e2e8f0; background: #fff; padding: .7rem .85rem; color: #334155; font-size: .875rem; outline: none; transition: .18s ease; }
 .input-base::placeholder { color: #94a3b8; }
 .input-base:focus { border-color: #0d9488; box-shadow: 0 0 0 4px rgb(13 148 136 / .1); }
+.field-label { display: flex; align-items: center; gap: .45rem; margin-bottom: .4rem; color: #475569; font-size: .875rem; font-weight: 600; }
+.admin-search-input { padding-left: 2.5rem; }
+.admin-status-cell { min-width: 7.5rem; white-space: nowrap; }
+.admin-contact-cell { width: 16rem; max-width: 16rem; white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
+
+.admin-filter-select { width: 100%; }
+@media (min-width: 1024px) {
+  .admin-filter-select { width: 12rem; flex: 0 0 12rem; }
+}
 
 .data-table { width: 100%; border-collapse: collapse; white-space: nowrap; text-align: left; }
 .data-table thead { background: #f8fafc; }
