@@ -33,6 +33,10 @@ export async function apiRequestResult<T>(path: string, options: RequestOptions 
     return apiRequestResult<T>(path, { ...options, retryAuth: false })
   }
 
+  if (response.status === 204) {
+    return { dataResponse: null, message: '', statusCode: response.status } as ApiResponse<T>
+  }
+
   const payload = await response.json().catch(() => null) as (ApiResponse<T> & ErrorPayload) | null
   if (!response.ok) {
     throw new ApiError(getErrorMessage(payload), response.status, payload)
@@ -51,4 +55,29 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   // payload trực tiếp thay vì HTTPResponseData. Giữ adapter ở hạ tầng để
   // các module không phải tự xử lý hai kiểu response.
   return payload as T
+}
+
+export async function apiDownload(path: string, options: RequestOptions = {}): Promise<{ blob: Blob; fileName?: string }> {
+  const { skipAuth = false, retryAuth = true, ...init } = options
+  const session = getStoredSession()
+  const headers = new Headers(init.headers)
+  if (!skipAuth && session?.accessToken) headers.set('Authorization', `Bearer ${session.accessToken}`)
+
+  let response: Response
+  try {
+    response = await fetch(`${API_URL}${path}`, { ...init, headers })
+  } catch {
+    throw new ApiError('Không thể kết nối đến FoMed API. Vui lòng kiểm tra backend.', 0)
+  }
+  if (response.status === 401 && !skipAuth && retryAuth && session?.refreshToken) {
+    await refreshStoredSession()
+    return apiDownload(path, { ...options, retryAuth: false })
+  }
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null) as ErrorPayload | null
+    throw new ApiError(getErrorMessage(payload), response.status, payload)
+  }
+  const disposition = response.headers.get('content-disposition') ?? ''
+  const match = disposition.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i)
+  return { blob: await response.blob(), fileName: match?.[1] ? decodeURIComponent(match[1]) : undefined }
 }

@@ -12,7 +12,7 @@ export function Button({ children, variant = 'primary', className = '', ...props
     ghost: 'text-slate-600 hover:bg-slate-100',
     danger: 'bg-rose-50 text-rose-700 hover:bg-rose-100',
   }
-  return <button className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`} {...props}>{children}</button>
+  return <button className={`inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 text-sm font-semibold transition [&>svg]:shrink-0 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`} {...props}>{children}</button>
 }
 
 export function Badge({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'success' | 'warning' | 'danger' | 'info' | 'neutral' }) {

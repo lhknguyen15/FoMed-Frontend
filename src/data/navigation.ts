@@ -1,5 +1,5 @@
 import {
-  Activity, BarChart3, CalendarDays, CalendarOff, ClipboardList, Clock3, FileText, FlaskConical,
+  Activity, BarChart3, CalendarDays, CalendarOff, Clock3, FileText, FlaskConical,
   HeartPulse, LayoutDashboard, PackageOpen, Pill, ReceiptText, ShieldCheck, Stethoscope,
   UserCog, UserRound, UsersRound, WalletCards,
 } from 'lucide-react'
@@ -26,21 +26,19 @@ export const roleNavigation: Record<Role, NavItem[]> = {
     { label: 'Hồ sơ bệnh nhân', path: '/reception/patients', icon: UsersRound },
     { label: 'Đặt lịch tại quầy', path: '/reception/booking', icon: CalendarDays },
     { label: 'Hàng chờ', path: '/reception/queue', icon: Clock3, badge: '6' },
-    { label: 'Thu ngân', path: '/reception/cashier/871', icon: WalletCards },
+    { label: 'Thu ngân', path: '/reception/cashier', icon: WalletCards },
   ],
   'Bác sĩ': [
     { label: 'Hàng chờ của tôi', path: '/doctor/queue', icon: UsersRound, badge: '6' },
-    { label: 'Khám bệnh', path: '/doctor/exam/451', icon: Stethoscope },
-    { label: 'Chỉ định & kết quả', path: '/doctor/exam/451/services', icon: FlaskConical },
-    { label: 'Kê đơn thuốc', path: '/doctor/exam/451/prescription', icon: Pill },
+    // Phiếu khám, chỉ định và đơn thuốc chỉ có recordId sau khi bác sĩ chọn bệnh nhân.
+    // Các màn hình này được mở từ hàng chờ để tránh điều hướng tới một hồ sơ mẫu không tồn tại.
   ],
   'Kỹ thuật viên': [
     { label: 'Chờ thực hiện', path: '/technician/orders', icon: FlaskConical, badge: '4' },
-    { label: 'Đã trả kết quả', path: '/technician/results', icon: ClipboardList },
   ],
   'Dược sĩ': [
     { label: 'Kho thuốc', path: '/pharmacy/inventory', icon: PackageOpen },
-    { label: 'Phát thuốc', path: '/pharmacy/dispense/451', icon: Pill, badge: '3' },
+    { label: 'Phát thuốc', path: '/pharmacy/dispense', icon: Pill, badge: '3' },
     { label: 'Nhập thuốc', path: '/pharmacy/receipt', icon: ReceiptText },
   ],
   'Quản trị': [
@@ -65,6 +63,7 @@ export const screenMeta: Record<string, { eyebrow: string; title: string; descri
   '/reception/patients': { eyebrow: 'Bàn tiếp đón', title: 'Hồ sơ bệnh nhân', description: 'Tra cứu, cập nhật và tạo nhanh hồ sơ bệnh nhân.' },
   '/reception/booking': { eyebrow: 'Bàn tiếp đón', title: 'Đặt lịch tại quầy', description: 'Đặt hộ qua điện thoại hoặc tiếp nhận khách vãng lai.' },
   '/reception/queue': { eyebrow: 'Điều phối khám', title: 'Hàng chờ phòng khám', description: 'Theo dõi thứ tự và thời gian chờ theo thời gian thực.' },
+  '/reception/cashier': { eyebrow: 'Bàn tiếp đón · Thu ngân', title: 'Hóa đơn cần xử lý', description: 'Chọn hóa đơn để ghi nhận thanh toán và xử lý nghiệp vụ.' },
   '/doctor/queue': { eyebrow: 'Không gian bác sĩ', title: 'Bệnh nhân chờ khám', description: 'Danh sách đã check-in và sẵn sàng thăm khám.' },
   '/doctor/exam/451': { eyebrow: 'Phiếu khám A2026-0451', title: 'Khám bệnh', description: 'Trần Thị B · BN000125 · Nữ, 34 tuổi' },
   '/doctor/exam/451/services': { eyebrow: 'Phiếu khám A2026-0451', title: 'Chỉ định cận lâm sàng', description: 'Theo dõi chỉ định và kết quả thực hiện.' },

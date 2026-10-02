@@ -1,0 +1,13 @@
+import { AlertCircle, ArrowRight, CheckCircle2, ReceiptText, RefreshCw } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import AppShell from '../../../components/AppShell'
+import { Badge, Button, Card, PageTitle } from '../../../components/ui'
+import { invoiceApi } from '../../../features/billing/api/billing-api'
+import { useApiQuery } from '../../../shared/hooks/useApiQuery'
+
+export default function ReceptionInvoiceListPage() {
+  const navigate = useNavigate()
+  const invoices = useApiQuery('reception-invoices', () => invoiceApi.list(1))
+
+  return <AppShell><PageTitle eyebrow="Bàn tiếp đón · Thu ngân" title="Hóa đơn cần xử lý" description="Chọn hóa đơn để ghi nhận thanh toán, in hoặc hủy theo quyền của lễ tân." action={<Button variant="secondary" onClick={invoices.refresh}><RefreshCw className="size-4" /> Làm mới</Button>} />{invoices.loading ? <Card className="grid min-h-64 place-items-center"><span className="size-9 animate-spin rounded-full border-4 border-teal-100 border-t-teal-700" /></Card> : invoices.error ? <Card className="p-8 text-center"><AlertCircle className="mx-auto size-10 text-rose-500" /><p className="mt-3 text-sm text-rose-700">{invoices.error}</p><Button className="mt-5" onClick={invoices.refresh}>Thử lại</Button></Card> : !invoices.data?.length ? <Card className="p-10 text-center"><CheckCircle2 className="mx-auto size-10 text-emerald-500" /><h2 className="mt-3 font-display text-lg font-bold text-slate-900">Chưa có hóa đơn</h2><p className="mt-1 text-sm text-slate-500">Các hóa đơn được tạo sau khi hoàn tất khám sẽ xuất hiện tại đây.</p></Card> : <Card className="overflow-hidden"><div className="overflow-x-auto"><table className="data-table"><thead><tr><th>Hóa đơn</th><th>Bệnh nhân</th><th>Tổng tiền</th><th>Đã thu</th><th>Trạng thái</th><th /></tr></thead><tbody>{invoices.data.map((invoice) => <tr key={invoice.id}><td><strong>{invoice.invoiceNo}</strong><small className="mt-1 block text-slate-500">Hồ sơ #{invoice.medicalRecordId ?? '—'}</small></td><td>#{invoice.patientId}</td><td>{invoice.totalAmount.toLocaleString('vi-VN')} đ</td><td>{invoice.paidAmount.toLocaleString('vi-VN')} đ</td><td><Badge tone={invoice.status === 1 ? 'success' : invoice.status === 2 ? 'danger' : invoice.paidAmount > 0 ? 'warning' : 'info'}>{invoice.status === 1 ? 'Đã thanh toán' : invoice.status === 2 ? 'Đã hủy' : invoice.paidAmount > 0 ? 'Thanh toán một phần' : 'Chưa thanh toán'}</Badge></td><td><Button variant="secondary" className="h-8 px-3 text-xs" onClick={() => navigate(`/reception/cashier/${invoice.id}`)}><ReceiptText className="size-4" /> Xem hóa đơn <ArrowRight className="size-4" /></Button></td></tr>)}</tbody></table></div></Card>}</AppShell>
+}

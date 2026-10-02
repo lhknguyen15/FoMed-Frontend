@@ -19,6 +19,24 @@ import UserManagementPage from "./cms/users/pages/UserManagementPage";
 import RoleManagementPage from "./cms/roles/pages/RoleManagementPage";
 import AdminReportPage from "./cms/reports/pages/AdminReportPage";
 import AuditLogPage from "./cms/audit/pages/AuditLogPage";
+import MyAppointmentsPage from "./workspaces/patient/pages/MyAppointmentsPage";
+import BookingPage from "./workspaces/patient/pages/BookingPage";
+import MedicalRecordListPage from "./workspaces/patient/pages/MedicalRecordListPage";
+import PatientInvoiceListPage from "./workspaces/patient/pages/PatientInvoiceListPage";
+import ReceptionDashboardPage from "./workspaces/reception/pages/ReceptionDashboardPage";
+import ReceptionPatientsPage from "./workspaces/reception/pages/ReceptionPatientsPage";
+import ReceptionBookingPage from "./workspaces/reception/pages/ReceptionBookingPage";
+import ReceptionQueuePage from "./workspaces/reception/pages/ReceptionQueuePage";
+import ReceptionCashierPage from "./workspaces/reception/pages/ReceptionCashierPage";
+import ReceptionInvoiceListPage from "./workspaces/reception/pages/ReceptionInvoiceListPage";
+import DoctorQueuePage from "./workspaces/doctor/pages/DoctorQueuePage";
+import DoctorExamPage from "./workspaces/doctor/pages/DoctorExamPage";
+import DoctorServicesPage from "./workspaces/doctor/pages/DoctorServicesPage";
+import DoctorPrescriptionPage from "./workspaces/doctor/pages/DoctorPrescriptionPage";
+import TechnicianOrdersPage from "./workspaces/technician/pages/TechnicianOrdersPage";
+import PharmacyInventoryPage from "./workspaces/pharmacy/pages/PharmacyInventoryPage";
+import PharmacyDispensePage from "./workspaces/pharmacy/pages/PharmacyDispensePage";
+import PharmacyReceiptPage from "./workspaces/pharmacy/pages/PharmacyReceiptPage";
 
 const patientRoutes = [
   "/booking",
@@ -31,6 +49,7 @@ const receptionRoutes = [
   "/reception/patients",
   "/reception/booking",
   "/reception/queue",
+  "/reception/cashier",
   "/reception/cashier/:invoiceId",
 ];
 const doctorRoutes = [
@@ -39,9 +58,10 @@ const doctorRoutes = [
   "/doctor/exam/:recordId/services",
   "/doctor/exam/:recordId/prescription",
 ];
-const technicianRoutes = ["/technician/orders", "/technician/results"];
+const technicianRoutes = ["/technician/orders"];
 const pharmacyRoutes = [
   "/pharmacy/inventory",
+  "/pharmacy/dispense",
   "/pharmacy/dispense/:prescriptionId",
   "/pharmacy/receipt",
 ];
@@ -61,27 +81,27 @@ export default function App() {
         <Route path="/account/change-password" element={<ChangePasswordPage />} />
         <Route element={<RoleRoute roles={["Patient"]} />}>
           {patientRoutes.map((path) => (
-            <Route key={path} path={path} element={<WorkspacePages />} />
+            <Route key={path} path={path} element={path === "/my-appointments" ? <MyAppointmentsPage /> : path === "/booking" ? <BookingPage /> : path === "/my-records" ? <MedicalRecordListPage /> : path === "/my-invoices" ? <PatientInvoiceListPage /> : <WorkspacePages />} />
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Receptionist", "Admin"]} />}>
           {receptionRoutes.map((path) => (
-            <Route key={path} path={path} element={<WorkspacePages />} />
+            <Route key={path} path={path} element={path === "/reception" ? <ReceptionDashboardPage /> : path === "/reception/patients" ? <ReceptionPatientsPage /> : path === "/reception/booking" ? <ReceptionBookingPage /> : path === "/reception/queue" ? <ReceptionQueuePage /> : path === "/reception/cashier" ? <ReceptionInvoiceListPage /> : path.startsWith("/reception/cashier/") ? <ReceptionCashierPage /> : <WorkspacePages />} />
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Doctor"]} />}>
           {doctorRoutes.map((path) => (
-            <Route key={path} path={path} element={<WorkspacePages />} />
+            <Route key={path} path={path} element={path === "/doctor/queue" ? <DoctorQueuePage /> : path.endsWith("/services") ? <DoctorServicesPage /> : path.endsWith("/prescription") ? <DoctorPrescriptionPage /> : <DoctorExamPage />} />
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Technician"]} />}>
           {technicianRoutes.map((path) => (
-            <Route key={path} path={path} element={<WorkspacePages />} />
+            <Route key={path} path={path} element={path === "/technician/orders" ? <TechnicianOrdersPage /> : <WorkspacePages />} />
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Pharmacist", "Admin"]} />}>
           {pharmacyRoutes.map((path) => (
-            <Route key={path} path={path} element={<WorkspacePages />} />
+            <Route key={path} path={path} element={path === "/pharmacy/inventory" ? <PharmacyInventoryPage /> : path === "/pharmacy/receipt" ? <PharmacyReceiptPage /> : <PharmacyDispensePage />} />
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Admin"]} />}>

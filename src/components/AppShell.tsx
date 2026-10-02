@@ -62,9 +62,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       <nav className="mt-5 flex-1 space-y-1 overflow-y-auto px-3">
         {!collapsed && <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[.18em] text-slate-400">Menu chính</p>}
-        {roleNavigation[role].map(({ label, path, icon: Icon, badge }) => <NavLink key={path} to={path} title={collapsed ? label : undefined} className={({ isActive }) => `group flex h-11 items-center rounded-xl text-sm font-semibold transition ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} ${isActive ? 'bg-teal-700 text-white shadow-md shadow-teal-800/10' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>
+        {roleNavigation[role].map(({ label, path, icon: Icon, badge }) => <NavLink key={path} to={path} end={path === roleHome[role]} title={collapsed ? label : undefined} className={({ isActive }) => `group flex h-11 items-center rounded-xl text-sm font-semibold transition ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} ${isActive ? 'bg-teal-700 text-white shadow-md shadow-teal-800/10' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>
           <Icon className="size-[19px] shrink-0" strokeWidth={2} />
-          {!collapsed && <span className="flex-1 truncate">{label}</span>}
+          {!collapsed && <span className="min-w-0 flex-1 truncate whitespace-nowrap">{label}</span>}
           {!collapsed && badge && <span className="grid min-w-5 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 text-[10px]">{badge}</span>}
         </NavLink>)}
       </nav>
