@@ -1,5 +1,5 @@
 import {
-  Activity, BarChart3, CalendarDays, CalendarOff, Clock3, FileText, FlaskConical,
+  Activity, BarChart3, CalendarDays, ClipboardList, Clock3, FileText, FlaskConical,
   HeartPulse, LayoutDashboard, PackageOpen, Pill, ReceiptText, ShieldCheck, Stethoscope,
   UserCog, UserRound, UsersRound, WalletCards,
 } from 'lucide-react'
@@ -35,6 +35,7 @@ export const roleNavigation: Record<Role, NavItem[]> = {
   ],
   'Kỹ thuật viên': [
     { label: 'Chờ thực hiện', path: '/technician/orders', icon: FlaskConical, badge: '4' },
+    { label: 'Kết quả vừa trả', path: '/technician/results', icon: ClipboardList },
   ],
   'Dược sĩ': [
     { label: 'Kho thuốc', path: '/pharmacy/inventory', icon: PackageOpen },
@@ -45,7 +46,7 @@ export const roleNavigation: Record<Role, NavItem[]> = {
     { label: 'Tổng quan', path: '/admin/dashboard', icon: LayoutDashboard },
     { label: 'Bác sĩ', path: '/admin/doctors', icon: Stethoscope },
     { label: 'Chuyên khoa', path: '/admin/specialties', icon: HeartPulse },
-    { label: 'Lịch nghỉ', path: '/admin/time-off', icon: CalendarOff },
+    { label: 'Lịch làm việc & nghỉ', path: '/admin/schedules', icon: CalendarDays },
     { label: 'Danh mục dịch vụ', path: '/admin/services', icon: Activity },
     { label: 'Người dùng', path: '/admin/users', icon: UserRound },
     { label: 'Vai trò', path: '/admin/roles', icon: UserCog },

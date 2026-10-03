@@ -1,16 +1,11 @@
 import { useState } from 'react'
-import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import logo from '../../../assets/images/FoMed_Logo.png'
+import { AlertCircle, CheckCircle2, Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react'
+import { Button, Card } from '../../../components/ui'
 import { ApiError } from '../../../shared/api/api-error'
 import { AuthField } from '../../../features/auth/components/AuthField'
 import { authApi } from '../../../features/auth/api/auth-api'
-import { useAuth } from '../../../features/auth/hooks/useAuth'
-import { getRoleHome } from '../../../routes/role-home'
 
 export default function ChangePasswordPage() {
-  const navigate = useNavigate()
-  const { user } = useAuth()
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -39,20 +34,20 @@ export default function ChangePasswordPage() {
     }
   }
 
-  return <main className="grid min-h-screen place-items-center bg-[#f4f8f7] p-5">
-    <section className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5 sm:p-9">
-      <div className="flex items-center justify-between"><button onClick={() => user && navigate(getRoleHome(user))} className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-teal-700"><ArrowLeft className="size-4" /> Quay lại</button><img src={logo} alt="FoMed" className="size-11 object-contain" /></div>
-      <span className="mt-7 grid size-12 place-items-center rounded-2xl bg-teal-50 text-teal-700"><ShieldCheck className="size-6" /></span>
-      <h1 className="mt-4 font-display text-3xl font-bold text-slate-900">Đổi mật khẩu</h1>
-      <p className="mt-2 text-sm leading-6 text-slate-500">Sử dụng mật khẩu mạnh và không chia sẻ mật khẩu với người khác.</p>
-      {error && <div role="alert" className="mt-5 flex gap-3 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-700"><AlertCircle className="size-[18px] shrink-0" />{error}</div>}
-      {message && <div role="status" className="mt-5 flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-sm text-emerald-700"><CheckCircle2 className="size-[18px] shrink-0" />{message}</div>}
-      <form onSubmit={submit} className="mt-6 space-y-4">
+  return <Card className="overflow-hidden">
+    <div className="flex items-start gap-4 border-b border-slate-100 p-5 sm:p-6">
+      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-teal-50 text-teal-700"><ShieldCheck className="size-5" /></span>
+      <div><h2 className="font-display text-lg font-bold text-slate-900 sm:text-xl">Đổi mật khẩu</h2><p className="mt-1 text-sm leading-5 text-slate-500">Sử dụng mật khẩu mạnh và không chia sẻ với người khác.</p></div>
+    </div>
+    <div className="p-5 sm:p-6">
+      {error && <div role="alert" className="mb-5 flex gap-3 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-700"><AlertCircle className="size-[18px] shrink-0" />{error}</div>}
+      {message && <div role="status" className="mb-5 flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-sm text-emerald-700"><CheckCircle2 className="size-[18px] shrink-0" />{message}</div>}
+      <form onSubmit={submit} className="max-w-xl space-y-4">
         <AuthField label="Mật khẩu hiện tại" icon={<LockKeyhole className="size-[18px]" />} type={visible ? 'text' : 'password'} value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} autoComplete="current-password" disabled={loading} />
         <AuthField label="Mật khẩu mới" icon={<LockKeyhole className="size-[18px]" />} type={visible ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" placeholder="Tối thiểu 8 ký tự" disabled={loading} trailing={<button type="button" onClick={() => setVisible(!visible)} className="text-slate-400">{visible ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}</button>} />
         <AuthField label="Xác nhận mật khẩu mới" icon={<LockKeyhole className="size-[18px]" />} type={visible ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" disabled={loading} />
-        <button disabled={loading || !oldPassword || !newPassword || !confirmPassword} className="flex h-12 w-full items-center justify-center rounded-xl bg-teal-700 text-sm font-bold text-white shadow-lg shadow-teal-800/15 hover:bg-teal-800 disabled:opacity-50">{loading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}</button>
+        <div className="flex justify-end border-t border-slate-100 pt-4"><Button type="submit" disabled={loading || !oldPassword || !newPassword || !confirmPassword}>{loading ? 'Đang cập nhật…' : 'Cập nhật mật khẩu'}</Button></div>
       </form>
-    </section>
-  </main>
+    </div>
+  </Card>
 }

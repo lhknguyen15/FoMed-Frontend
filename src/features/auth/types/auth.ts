@@ -20,6 +20,17 @@ export type AuthResponse = {
   user: SessionUser
 }
 
+export type UserProfile = {
+  userId: number
+  fullName: string
+  email?: string | null
+  phone?: string | null
+  roles: string[]
+  isActive: boolean
+  doctorId?: number | null
+  patientId?: number | null
+}
+
 export type AdminUser = {
   userId: number
   username: string

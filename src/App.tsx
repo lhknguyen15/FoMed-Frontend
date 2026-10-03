@@ -13,7 +13,7 @@ import CMSLayout from "./layouts/CMSLayout";
 import AdminDashboardPage from "./cms/dashboard/pages/AdminDashboardPage";
 import DoctorManagementPage from "./cms/doctors/pages/DoctorManagementPage";
 import SpecialtyManagementPage from "./cms/specialties/pages/SpecialtyManagementPage";
-import TimeOffManagementPage from "./cms/time-off/pages/TimeOffManagementPage";
+import ScheduleManagementPage from "./cms/schedules/pages/ScheduleManagementPage";
 import ServiceManagementPage from "./cms/services/pages/ServiceManagementPage";
 import UserManagementPage from "./cms/users/pages/UserManagementPage";
 import RoleManagementPage from "./cms/roles/pages/RoleManagementPage";
@@ -34,9 +34,12 @@ import DoctorExamPage from "./workspaces/doctor/pages/DoctorExamPage";
 import DoctorServicesPage from "./workspaces/doctor/pages/DoctorServicesPage";
 import DoctorPrescriptionPage from "./workspaces/doctor/pages/DoctorPrescriptionPage";
 import TechnicianOrdersPage from "./workspaces/technician/pages/TechnicianOrdersPage";
+import TechnicianResultsPage from "./workspaces/technician/pages/TechnicianResultsPage";
 import PharmacyInventoryPage from "./workspaces/pharmacy/pages/PharmacyInventoryPage";
 import PharmacyDispensePage from "./workspaces/pharmacy/pages/PharmacyDispensePage";
 import PharmacyReceiptPage from "./workspaces/pharmacy/pages/PharmacyReceiptPage";
+import AccountLayout from "./workspaces/account/layouts/AccountLayout";
+import AccountProfilePage from "./workspaces/account/pages/AccountProfilePage";
 
 const patientRoutes = [
   "/booking",
@@ -58,7 +61,7 @@ const doctorRoutes = [
   "/doctor/exam/:recordId/services",
   "/doctor/exam/:recordId/prescription",
 ];
-const technicianRoutes = ["/technician/orders"];
+const technicianRoutes = ["/technician/orders", "/technician/results"];
 const pharmacyRoutes = [
   "/pharmacy/inventory",
   "/pharmacy/dispense",
@@ -78,7 +81,10 @@ export default function App() {
       </Route>
       <Route element={<ProtectedRoute />}>
         <Route path="/forbidden" element={<ForbiddenPage />} />
-        <Route path="/account/change-password" element={<ChangePasswordPage />} />
+        <Route element={<AccountLayout />}>
+          <Route path="/account/profile" element={<AccountProfilePage />} />
+          <Route path="/account/change-password" element={<ChangePasswordPage />} />
+        </Route>
         <Route element={<RoleRoute roles={["Patient"]} />}>
           {patientRoutes.map((path) => (
             <Route key={path} path={path} element={path === "/my-appointments" ? <MyAppointmentsPage /> : path === "/booking" ? <BookingPage /> : path === "/my-records" ? <MedicalRecordListPage /> : path === "/my-invoices" ? <PatientInvoiceListPage /> : <WorkspacePages />} />
@@ -96,7 +102,7 @@ export default function App() {
         </Route>
         <Route element={<RoleRoute roles={["Technician"]} />}>
           {technicianRoutes.map((path) => (
-            <Route key={path} path={path} element={path === "/technician/orders" ? <TechnicianOrdersPage /> : <WorkspacePages />} />
+            <Route key={path} path={path} element={path === "/technician/orders" ? <TechnicianOrdersPage /> : <TechnicianResultsPage />} />
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Pharmacist", "Admin"]} />}>
@@ -109,7 +115,8 @@ export default function App() {
             <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
             <Route path="/admin/doctors" element={<DoctorManagementPage />} />
             <Route path="/admin/specialties" element={<SpecialtyManagementPage />} />
-            <Route path="/admin/time-off" element={<TimeOffManagementPage />} />
+            <Route path="/admin/schedules" element={<ScheduleManagementPage />} />
+            <Route path="/admin/time-off" element={<Navigate to="/admin/schedules?tab=leave" replace />} />
             <Route path="/admin/services" element={<ServiceManagementPage />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/roles" element={<RoleManagementPage />} />

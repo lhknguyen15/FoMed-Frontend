@@ -9,7 +9,10 @@ import CMSPageHeader from '../../components/CMSPageHeader'
 
 export default function AdminDashboardPage() {
   const today = toDateInput(new Date())
-  const report = useApiQuery(`dashboard-${today}`, () => reportApi.summary({ from: today, to: today }))
+  const tomorrowDate = new Date()
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+  const tomorrow = toDateInput(tomorrowDate)
+  const report = useApiQuery(`dashboard-${today}`, () => reportApi.summary({ from: today, to: tomorrow }))
   if (report.loading) return <><CMSPageHeader title="Tổng quan" description="Tình hình hoạt động của phòng khám hôm nay." /><CMSLoading /></>
   if (report.error || !report.data) return <><CMSPageHeader title="Tổng quan" description="Tình hình hoạt động của phòng khám hôm nay." /><CMSError message={report.error} retry={report.refresh} /></>
   const data = report.data

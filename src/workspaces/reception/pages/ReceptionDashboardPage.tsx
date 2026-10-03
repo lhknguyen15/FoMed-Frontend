@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, XCircle } from 'lucide-react'
+import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, UserCheck, X, XCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppShell from '../../../components/AppShell'
@@ -25,6 +25,7 @@ export default function ReceptionDashboardPage() {
   const [date, setDate] = useState(today)
   const [doctorId, setDoctorId] = useState('')
   const [action, setAction] = useState<{ appointment: Appointment } | null>(null)
+  const [confirming, setConfirming] = useState<Appointment | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -39,11 +40,29 @@ export default function ReceptionDashboardPage() {
   useEffect(() => { setPage((current) => Math.min(current, pageCount)) }, [pageCount])
   const counts = useMemo(() => ({
     total: rows.length,
+    pending: rows.filter((item) => item.status === 0).length,
     waiting: rows.filter((item) => item.status === 1 && !item.checkedInAt).length,
     checkedIn: rows.filter((item) => item.checkedInAt && item.status === 1).length,
     completed: rows.filter((item) => item.status === 3).length,
     noShow: rows.filter((item) => item.status === 5).length,
   }), [rows])
+
+  const confirm = async () => {
+    if (!confirming) return
+    setSubmitting(true)
+    setError('')
+    setSuccess('')
+    try {
+      await appointmentApi.confirm(confirming.id)
+      setSuccess(`Đã xác nhận lịch hẹn ${confirming.appointmentCode} cho ${confirming.patientName}. Bệnh nhân có thể check-in vào ngày khám.`)
+      setConfirming(null)
+      appointments.refresh()
+    } catch (value) {
+      setError(value instanceof Error ? value.message : 'Không thể xác nhận lịch hẹn.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const checkIn = async (appointment: Appointment) => {
     setError('')
@@ -82,11 +101,12 @@ export default function ReceptionDashboardPage() {
       <label className="flex-1"><span className="field-label">Bác sĩ</span><select value={doctorId} onChange={(event) => setDoctorId(event.target.value)} className="input-base"><option value="">Tất cả bác sĩ</option>{doctors.data?.map((doctor) => <option key={doctor.doctorId} value={doctor.doctorId}>{doctor.title ? `${doctor.title} ` : ''}{doctor.fullName}</option>)}</select></label>
       <Button variant="secondary" onClick={() => { setDate(today); setDoctorId('') }}><Clock3 className="size-4" /> Hôm nay</Button>
     </div></Card>
-    <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5"><Summary label="Tổng lịch hẹn" value={counts.total} /><Summary label="Chờ đến" value={counts.waiting} tone="amber" /><Summary label="Đã check-in" value={counts.checkedIn} tone="sky" /><Summary label="Đã khám xong" value={counts.completed} tone="emerald" /><Summary label="Không đến" value={counts.noShow} tone="rose" /></div>
+    <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6"><Summary label="Tổng lịch hẹn" value={counts.total} /><Summary label="Chờ xác nhận" value={counts.pending} tone="amber" /><Summary label="Chờ đến" value={counts.waiting} tone="amber" /><Summary label="Đã check-in" value={counts.checkedIn} tone="sky" /><Summary label="Đã khám xong" value={counts.completed} tone="emerald" /><Summary label="Không đến" value={counts.noShow} tone="rose" /></div>
     {appointments.loading ? <Card className="grid min-h-72 place-items-center"><span className="size-9 animate-spin rounded-full border-4 border-teal-100 border-t-teal-700" /></Card> : appointments.error ? <Card className="p-8 text-center"><XCircle className="mx-auto size-10 text-rose-500" /><p className="mt-3 text-sm text-slate-500">{appointments.error}</p><Button className="mt-5" onClick={appointments.refresh}>Thử lại</Button></Card> : <Card className="overflow-hidden">
       <div className="border-b border-slate-100 p-5"><h2 className="font-display text-lg font-bold text-slate-900">Danh sách lịch hẹn</h2><p className="mt-1 text-sm text-slate-500">{date === today ? 'Hôm nay' : date} · {rows.length} lịch hẹn</p></div>
-      {rows.length === 0 ? <p className="p-10 text-center text-sm text-slate-500">Không có lịch hẹn phù hợp.</p> : <><div className="overflow-x-auto"><table className="data-table"><thead><tr><th>Giờ</th><th>STT</th><th>Bệnh nhân</th><th>Mã BN</th><th>Bác sĩ</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>{visibleRows.map((item) => { const status = labels[item.status] ?? { label: item.statusName, tone: 'neutral' as const }; return <tr key={item.id}><td className="whitespace-nowrap font-semibold">{new Intl.DateTimeFormat('vi-VN', { timeStyle: 'short' }).format(new Date(item.startTime))}</td><td>{item.queueNumber ?? '—'}</td><td><strong className="block">{item.patientName}</strong><small>{item.patientPhone || '—'}</small></td><td>{item.patientId}</td><td>{item.doctorName}</td><td><Badge tone={status.tone}>{item.checkedInAt && item.status === 1 ? 'Đã check-in' : status.label}</Badge></td><td><div className="flex min-w-max gap-2">{item.status === 1 && !item.checkedInAt && <Button className="h-8 px-3 text-xs" onClick={() => void checkIn(item)}>Check-in</Button>}{item.status === 1 && item.checkedInAt && <Button variant="secondary" className="h-8 px-3 text-xs" onClick={() => navigate('/reception/queue')}>Hàng chờ</Button>}{item.status === 1 && !item.checkedInAt && new Date(item.startTime).getTime() < Date.now() && <Button variant="danger" className="h-8 px-3 text-xs" onClick={() => { setError(''); setAction({ appointment: item }) }}>Không đến</Button>}{item.status === 3 && <Button variant="ghost" className="h-8 px-3 text-xs" onClick={() => navigate('/reception/patients')}>Xem hồ sơ</Button>}</div></td></tr> })}</tbody></table></div><div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-between"><span className="text-xs font-semibold text-slate-500">Trang {page}/{pageCount} · Hiển thị {visibleRows.length}/{rows.length} lịch hẹn</span><div className="flex gap-2"><Button type="button" variant="secondary" className="h-8 px-3 text-xs" disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))}><ChevronLeft className="size-4" /> Trước</Button><Button type="button" variant="secondary" className="h-8 px-3 text-xs" disabled={page >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))}>Sau <ChevronRight className="size-4" /></Button></div></div></>}
+      {rows.length === 0 ? <div className="p-10 text-center"><p className="text-sm text-slate-600">Không có lịch hẹn vào ngày đang chọn.</p>{date === today && <p className="mt-1 text-xs text-slate-400">Lịch hẹn ở ngày khác sẽ hiện khi bạn đổi bộ lọc “Ngày xem”.</p>}</div> : <><div className="overflow-x-auto"><table className="data-table"><thead><tr><th>Giờ</th><th>STT</th><th>Bệnh nhân</th><th>Mã BN</th><th>Bác sĩ</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>{visibleRows.map((item) => { const status = labels[item.status] ?? { label: item.statusName, tone: 'neutral' as const }; return <tr key={item.id}><td className="whitespace-nowrap font-semibold">{new Intl.DateTimeFormat('vi-VN', { timeStyle: 'short' }).format(new Date(item.startTime))}</td><td>{item.queueNumber ?? '—'}</td><td><strong className="block">{item.patientName}</strong><small>{item.patientPhone || '—'}</small></td><td>{item.patientId}</td><td>{item.doctorName}</td><td><Badge tone={status.tone}>{item.checkedInAt && item.status === 1 ? 'Đã check-in' : status.label}</Badge></td><td><div className="flex min-w-max gap-2">{item.status === 0 && <Button className="h-8 px-3 text-xs" disabled={submitting} onClick={() => { setError(''); setConfirming(item) }}><UserCheck className="size-4" /> Xác nhận</Button>}{item.status === 1 && !item.checkedInAt && <Button className="h-8 px-3 text-xs" onClick={() => void checkIn(item)}>Check-in</Button>}{item.status === 1 && item.checkedInAt && <Button variant="secondary" className="h-8 px-3 text-xs" onClick={() => navigate('/reception/queue')}>Hàng chờ</Button>}{item.status === 1 && !item.checkedInAt && new Date(item.startTime).getTime() < Date.now() && <Button variant="danger" className="h-8 px-3 text-xs" onClick={() => { setError(''); setAction({ appointment: item }) }}>Không đến</Button>}{item.status === 3 && <Button variant="ghost" className="h-8 px-3 text-xs" onClick={() => navigate('/reception/patients')}>Xem hồ sơ</Button>}</div></td></tr> })}</tbody></table></div><div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-between"><span className="text-xs font-semibold text-slate-500">Trang {page}/{pageCount} · Hiển thị {visibleRows.length}/{rows.length} lịch hẹn</span><div className="flex gap-2"><Button type="button" variant="secondary" className="h-8 px-3 text-xs" disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))}><ChevronLeft className="size-4" /> Trước</Button><Button type="button" variant="secondary" className="h-8 px-3 text-xs" disabled={page >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))}>Sau <ChevronRight className="size-4" /></Button></div></div></>}
     </Card>}
+    {confirming && <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/40 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="confirm-appointment-title"><div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.15em] text-teal-700">Bàn tiếp đón · Xác nhận lịch</p><h2 id="confirm-appointment-title" className="mt-1 font-display text-2xl font-bold text-slate-900">Xác nhận lịch hẹn?</h2></div><button type="button" aria-label="Đóng" onClick={() => setConfirming(null)} disabled={submitting} className="grid size-9 shrink-0 place-items-center rounded-xl text-slate-400 hover:bg-slate-100"><X className="size-5" /></button></div><div className="mt-5 rounded-xl bg-slate-50 p-4 text-sm"><p><strong>{confirming.patientName}</strong> · {confirming.patientPhone || 'Chưa có số điện thoại'}</p><p className="mt-1 text-slate-600">{confirming.doctorName} · {formatDateTime(confirming.startTime)}</p><p className="mt-1 text-xs text-slate-500">Mã lịch: {confirming.appointmentCode}</p></div><p className="mt-4 text-sm leading-6 text-slate-600">Sau khi xác nhận, lịch chuyển sang “Chờ đến”. Bệnh nhân sẽ được check-in tại quầy vào ngày khám và sau đó xuất hiện trong hàng chờ bác sĩ.</p>{error && <p role="alert" className="mt-4 rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-700">{error}</p>}<div className="mt-7 flex justify-end gap-3"><Button type="button" variant="secondary" onClick={() => setConfirming(null)} disabled={submitting}>Để sau</Button><Button type="button" onClick={() => void confirm()} disabled={submitting}><UserCheck className="size-4" />{submitting ? 'Đang xác nhận...' : 'Xác nhận lịch'}</Button></div></div></div>}
     {action && <ReceptionReasonModal title="Đánh dấu không đến" description={`Xác nhận ${action.appointment.patientName} không đến lịch ${formatDateTime(action.appointment.startTime)}.`} submitLabel="Xác nhận" danger error={error} submitting={submitting} onClose={() => setAction(null)} onSubmit={noShow} />}
   </AppShell>
 }

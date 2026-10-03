@@ -1,5 +1,5 @@
 import { apiRequest, apiRequestResult } from '../../../shared/api/http-client'
-import type { AdminRole, AdminUser, AdminUserPage, AuthResponse, LoginRequest, RegisterPatientRequest } from '../types/auth'
+import type { AdminRole, AdminUser, AdminUserPage, AuthResponse, LoginRequest, RegisterPatientRequest, UserProfile } from '../types/auth'
 
 export const authApi = {
   login: (request: LoginRequest) => apiRequest<AuthResponse>('/auth/login', {
@@ -38,6 +38,13 @@ export const authApi = {
     if (filters.isActive !== undefined) params.set('isActive', String(filters.isActive))
     return apiRequest<AdminUserPage>(`/admin/users?${params}`)
   },
+
+  getProfile: () => apiRequest<UserProfile>('/profile'),
+
+  updateProfile: (request: { fullName: string; phone?: string }) => apiRequest<UserProfile>('/profile', {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  }),
 
   adminRoles: () => apiRequest<AdminRole[]>('/admin/roles'),
 
