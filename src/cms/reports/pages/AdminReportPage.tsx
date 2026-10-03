@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarRange, CheckCircle2, CircleDollarSign, Download, Users, WalletCards } from 'lucide-react'
+import { BarChart3, CalendarRange, CheckCircle2, CircleDollarSign, Download, Users, WalletCards, XCircle } from 'lucide-react'
 import { Button, Card } from '../../../components/ui'
 import { doctorAdminApi } from '../../../features/doctors/api/doctor-api'
 import { reportApi } from '../../../features/reports/api/report-api'
@@ -9,43 +9,66 @@ import { toDateInput } from '../../../shared/utils/format-date'
 import { CMSEmpty, CMSError, CMSLoading } from '../../components/CMSDataTable'
 import CMSPageHeader from '../../components/CMSPageHeader'
 
-function nextDate(value: string) {
+function exclusiveEnd(value: string) {
   if (!value) return value
   const date = new Date(`${value}T00:00:00`)
   date.setDate(date.getDate() + 1)
   return toDateInput(date)
 }
 
+function calculateNoShowRate(noShowCount: number, appointmentCount: number, cancelledCount: number) {
+  const eligibleCount = Math.max(0, appointmentCount - cancelledCount)
+  return eligibleCount === 0 ? 0 : Math.round((noShowCount / eligibleCount) * 1000) / 10
+}
+
 export default function AdminReportPage() {
   const now = new Date()
-  const [from, setFrom] = useState(toDateInput(new Date(now.getFullYear(), now.getMonth(), 1)))
-  const [to, setTo] = useState(toDateInput(now))
+  const initialFrom = toDateInput(new Date(now.getFullYear(), now.getMonth(), 1))
+  const initialTo = toDateInput(now)
+  const [from, setFrom] = useState(initialFrom)
+  const [to, setTo] = useState(initialTo)
   const [doctorId, setDoctorId] = useState('')
+  const [applied, setApplied] = useState({ from: initialFrom, to: initialTo, doctorId: '' })
+  const [formError, setFormError] = useState('')
   const [downloadError, setDownloadError] = useState('')
   const [downloading, setDownloading] = useState(false)
   const doctors = useApiQuery('admin-report-doctors', doctorAdminApi.list)
   const invalidRange = Boolean(from && to && from > to)
-  const report = useApiQuery(`report-${from}-${to}-${doctorId}`, () => invalidRange ? Promise.reject(new Error('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.')) : reportApi.summary({ from, to: nextDate(to), doctorId: doctorId ? Number(doctorId) : undefined }))
-
+  const report = useApiQuery(`report-${applied.from}-${applied.to}-${applied.doctorId}`, () => reportApi.summary({ from: applied.from, to: exclusiveEnd(applied.to), doctorId: applied.doctorId ? Number(applied.doctorId) : undefined }))
+  const apply = () => {
+    if (invalidRange || !from || !to) { setFormError('Vui lòng chọn khoảng ngày hợp lệ. Ngày bắt đầu không được sau ngày kết thúc.'); return }
+    setFormError(''); setDownloadError(''); setApplied({ from, to, doctorId })
+  }
   const exportReport = async () => {
-    if (invalidRange) { setDownloadError('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.'); return }
-    setDownloading(true)
-    setDownloadError('')
+    setDownloading(true); setDownloadError('')
     try {
-      const result = await reportApi.exportCsv({ from, to: nextDate(to), doctorId: doctorId ? Number(doctorId) : undefined })
+      const result = await reportApi.exportCsv({ from: applied.from, to: exclusiveEnd(applied.to), doctorId: applied.doctorId ? Number(applied.doctorId) : undefined })
       const url = URL.createObjectURL(result.blob)
       const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = result.fileName || `fomed-report-${from}-${to}.csv`
-      anchor.click()
+      anchor.href = url; anchor.download = result.fileName || `fomed-report-${applied.from}-${applied.to}.csv`; anchor.click()
       URL.revokeObjectURL(url)
-    } catch (reason) {
-      setDownloadError(reason instanceof Error ? reason.message : 'Không thể xuất báo cáo.')
-    } finally { setDownloading(false) }
+    } catch (reason) { setDownloadError(reason instanceof Error ? reason.message : 'Không thể xuất báo cáo.') }
+    finally { setDownloading(false) }
   }
+  const data = report.data
+  // Keep the report usable against an API process that has not yet been restarted with the new DTO.
+  const noShowRatePercent = data?.noShowRatePercent ?? (data ? calculateNoShowRate(data.noShowAppointments, data.totalAppointments, data.cancelledAppointments) : 0)
+  const metrics = data ? [
+    { label: 'Tổng lượt khám', value: data.totalAppointments.toLocaleString('vi-VN'), icon: CalendarRange, tone: 'text-teal-700' },
+    { label: 'Đã hoàn thành', value: data.completedAppointments.toLocaleString('vi-VN'), icon: CheckCircle2, tone: 'text-emerald-700' },
+    { label: 'Đã hủy', value: data.cancelledAppointments.toLocaleString('vi-VN'), icon: XCircle, tone: 'text-rose-700' },
+    { label: `Tỷ lệ không đến · ${data.noShowAppointments} lượt`, value: `${noShowRatePercent.toLocaleString('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`, icon: Users, tone: 'text-amber-700' },
+    { label: 'Giá trị hóa đơn phát hành', value: formatMoney(data.invoicedAmount), icon: CircleDollarSign, tone: 'text-sky-700' },
+    { label: 'Doanh thu thực thu', value: formatMoney(data.collectedAmount), icon: WalletCards, tone: 'text-emerald-700' },
+    { label: 'Còn phải thu', value: formatMoney(data.outstandingAmount), icon: CircleDollarSign, tone: 'text-orange-700' },
+  ] : []
 
-  return <><CMSPageHeader title="Báo cáo vận hành" description="Tổng hợp lượt khám, doanh thu và hiệu suất theo bác sĩ." />
-    <Card className="mb-6 p-4"><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"><label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-500">Từ ngày</span><input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="input-base" /></label><label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-500">Đến ngày</span><input type="date" value={to} onChange={(event) => setTo(event.target.value)} className="input-base" /></label><label className="block sm:col-span-2 xl:col-span-1"><span className="mb-1.5 block text-xs font-semibold text-slate-500">Bác sĩ</span><select value={doctorId} onChange={(event) => setDoctorId(event.target.value)} className="input-base"><option value="">Tất cả bác sĩ</option>{doctors.data?.filter((doctor) => doctor.isActive).map((doctor) => <option key={doctor.doctorId} value={doctor.doctorId}>{doctor.title ? `${doctor.title} ` : ''}{doctor.fullName}</option>)}</select></label><div className="flex items-end xl:col-span-2"><Button className="w-full sm:w-auto" onClick={() => void exportReport()} disabled={downloading || invalidRange}><Download className="size-4" />{downloading ? 'Đang xuất...' : 'Xuất CSV'}</Button></div></div>{(invalidRange || downloadError) && <p role="alert" className="mt-3 text-sm font-semibold text-rose-600">{downloadError || 'Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.'}</p>}</Card>
-    {report.loading ? <CMSLoading /> : report.error || !report.data ? <CMSError message={report.error} retry={report.refresh} /> : <><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6"><Card className="p-5"><CalendarRange className="size-5 text-teal-700" /><p className="mt-3 text-sm text-slate-500">Tổng lượt khám</p><b className="text-2xl">{report.data.totalAppointments.toLocaleString('vi-VN')}</b></Card><Card className="p-5"><CheckCircle2 className="size-5 text-sky-700" /><p className="mt-3 text-sm text-slate-500">Đã hoàn thành</p><b className="text-2xl">{report.data.completedAppointments.toLocaleString('vi-VN')}</b></Card><Card className="p-5"><Users className="size-5 text-amber-700" /><p className="mt-3 text-sm text-slate-500">Không đến</p><b className="text-2xl">{report.data.noShowAppointments.toLocaleString('vi-VN')}</b></Card><Card className="p-5"><CircleDollarSign className="size-5 text-sky-700" /><p className="mt-3 text-sm text-slate-500">Tổng lập hóa đơn</p><b className="text-xl">{formatMoney(report.data.invoicedAmount)}</b></Card><Card className="p-5"><WalletCards className="size-5 text-emerald-700" /><p className="mt-3 text-sm text-slate-500">Đã thu</p><b className="text-xl">{formatMoney(report.data.collectedAmount)}</b></Card><Card className="p-5"><CircleDollarSign className="size-5 text-rose-700" /><p className="mt-3 text-sm text-slate-500">Còn công nợ</p><b className="text-xl">{formatMoney(report.data.outstandingAmount)}</b></Card></div><Card className="mt-6 overflow-hidden">{report.data.doctors.length === 0 ? <CMSEmpty label="dữ liệu trong kỳ" /> : <div className="overflow-x-auto"><table className="data-table"><thead><tr><th>Bác sĩ</th><th>Lượt khám</th><th>Hoàn thành</th><th>Không đến</th><th>Lập hóa đơn</th><th>Đã thu</th></tr></thead><tbody>{report.data.doctors.map((row) => <tr key={row.doctorId}><td className="font-semibold">{row.doctorName}</td><td>{row.appointmentCount}</td><td>{row.completedCount}</td><td>{row.noShowCount}</td><td>{formatMoney(row.invoicedAmount)}</td><td>{formatMoney(row.collectedAmount)}</td></tr>)}</tbody></table></div>}</Card></>}
+  return <>
+    <CMSPageHeader title="Báo cáo vận hành" description="Theo dõi lượt khám, trạng thái lịch hẹn và tình hình thu phí theo khoảng thời gian, bác sĩ." action={<Button variant="secondary" onClick={() => void exportReport()} disabled={!data || downloading}><Download className="size-4" />{downloading ? 'Đang xuất…' : 'Xuất CSV'}</Button>} />
+    <Card className="mb-6 p-4"><div className="grid items-end gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.25fr_auto]"><label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-500">Từ ngày</span><input type="date" value={from} onChange={e => setFrom(e.target.value)} className="input-base" /></label><label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-500">Đến ngày</span><input type="date" value={to} onChange={e => setTo(e.target.value)} className="input-base" /></label><label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-500">Bác sĩ</span><select value={doctorId} onChange={e => setDoctorId(e.target.value)} className="input-base"><option value="">Tất cả bác sĩ</option>{doctors.data?.filter(d => d.isActive).map(d => <option key={d.doctorId} value={d.doctorId}>{d.title ? `${d.title} ` : ''}{d.fullName}</option>)}</select></label><Button onClick={apply} disabled={invalidRange}><BarChart3 className="size-4" />Lọc báo cáo</Button></div>{(formError || downloadError) && <p role="alert" className="mt-3 text-sm font-semibold text-rose-600">{formError || downloadError}</p>}</Card>
+    {report.loading ? <CMSLoading /> : report.error || !data ? <CMSError message={report.error} retry={report.refresh} /> : <>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(({ label, value, icon: Icon, tone }) => <Card key={label} className="p-5"><Icon className={`size-5 ${tone}`} /><p className="mt-3 text-sm text-slate-500">{label}</p><b className="mt-1 block text-xl text-slate-900">{value}</b></Card>)}</div>
+      <Card className="mt-6 overflow-hidden"><div className="border-b border-slate-100 p-5"><h2 className="font-display font-bold">Thống kê theo bác sĩ</h2><p className="mt-1 text-sm text-slate-500">{applied.from} – {applied.to}</p></div>{data.doctors.length === 0 ? <CMSEmpty label="dữ liệu bác sĩ trong kỳ" /> : <div className="overflow-x-auto"><table className="data-table"><thead><tr><th>Bác sĩ</th><th>Lượt khám</th><th>Hoàn thành</th><th>Không đến (%)</th><th>Hóa đơn phát hành</th><th>Doanh thu thực thu</th><th>Công nợ</th></tr></thead><tbody>{data.doctors.map(row => <tr key={row.doctorId}><td className="font-semibold">{row.doctorName}</td><td>{row.appointmentCount}</td><td>{row.completedCount}</td><td>{row.noShowCount} ({(row.noShowRatePercent ?? calculateNoShowRate(row.noShowCount, row.appointmentCount, row.cancelledCount ?? 0)).toLocaleString('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%)</td><td>{formatMoney(row.invoicedAmount)}</td><td>{formatMoney(row.collectedAmount)}</td><td>{formatMoney(row.outstandingAmount ?? 0)}</td></tr>)}</tbody></table></div>}</Card>
+    </>}
   </>
 }

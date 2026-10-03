@@ -4,8 +4,11 @@ export type DoctorReportRow = {
   appointmentCount: number
   completedCount: number
   noShowCount: number
+  cancelledCount?: number
+  noShowRatePercent?: number
   invoicedAmount: number
   collectedAmount: number
+  outstandingAmount: number
 }
 
 export type ReportSummary = {
@@ -15,6 +18,7 @@ export type ReportSummary = {
   completedAppointments: number
   noShowAppointments: number
   cancelledAppointments: number
+  noShowRatePercent?: number
   invoicedAmount: number
   collectedAmount: number
   outstandingAmount: number

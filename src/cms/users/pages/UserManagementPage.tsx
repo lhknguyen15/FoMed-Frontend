@@ -12,6 +12,8 @@ import ResetPasswordForm from '../components/ResetPasswordForm'
 import UserRoleForm from '../components/UserRoleForm'
 import UserStatusForm from '../components/UserStatusForm'
 
+const PAGE_SIZE = 10
+
 export default function UserManagementPage() {
   const [search, setSearch] = useState('')
   const [role, setRole] = useState('')
@@ -22,7 +24,7 @@ export default function UserManagementPage() {
   const [success, setSuccess] = useState('')
   const mutations = useAdminUserMutations()
   const roles = useApiQuery('admin-roles-for-users', authApi.adminRoles)
-  const users = useApiQuery(`admin-users-${search}-${role}-${activeFilter}-${page}`, () => authApi.adminUsers({ search, role, isActive: activeFilter === '' ? undefined : activeFilter === 'active', page, pageSize: 20 }))
+  const users = useApiQuery(`admin-users-${search}-${role}-${activeFilter}-${page}`, () => authApi.adminUsers({ search, role, isActive: activeFilter === '' ? undefined : activeFilter === 'active', page, pageSize: PAGE_SIZE }))
 
   const closeAction = () => { setAction(null); setSelectedUser(null); mutations.clearError() }
   const complete = (message: string) => { closeAction(); setSuccess(message); users.refresh(); roles.refresh() }

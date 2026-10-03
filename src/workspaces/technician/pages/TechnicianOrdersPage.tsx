@@ -1,10 +1,12 @@
 import { CheckCircle2, ClipboardList, FlaskConical, Paperclip, RefreshCw, Save, XCircle } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import AppShell from '../../../components/AppShell'
 import { Badge, Button, Card, EmptyState, PageTitle } from '../../../components/ui'
 import { clinicalApi } from '../../../features/clinical/api/clinical-api'
 import type { ServiceOrder } from '../../../features/clinical/types/clinical'
 import { useApiQuery } from '../../../shared/hooks/useApiQuery'
+import { rememberTechnicianResult } from '../utils/technician-results'
 
 type ResultDraft = { resultSummary: string; conclusion: string; referenceRange: string }
 
@@ -30,7 +32,8 @@ export default function TechnicianOrdersPage() {
     setBusy(true)
     setNotice(null)
     try {
-      await clinicalApi.saveLabResult(order.id, { resultSummary: value.resultSummary.trim(), conclusion: value.conclusion.trim() || undefined, referenceRange: value.referenceRange.trim() || undefined })
+      const saved = await clinicalApi.saveLabResult(order.id, { resultSummary: value.resultSummary.trim(), conclusion: value.conclusion.trim() || undefined, referenceRange: value.referenceRange.trim() || undefined })
+      rememberTechnicianResult(saved)
       setNotice({ type: 'success', text: `Đã lưu kết quả cho ${order.serviceName}. Trạng thái đã chuyển sang Đã có kết quả.` })
       setSelected(null)
       orders.refresh()
@@ -42,7 +45,7 @@ export default function TechnicianOrdersPage() {
   }
 
   return <AppShell>
-    <PageTitle eyebrow="Cận lâm sàng" title="Chỉ định chờ thực hiện" description="Nhập kết quả và trả về bệnh án của bác sĩ." action={<Button variant="secondary" onClick={orders.refresh}><RefreshCw className="size-4" /> Làm mới</Button>} />
+    <PageTitle eyebrow="Cận lâm sàng" title="Chỉ định chờ thực hiện" description="Nhập kết quả và trả về bệnh án của bác sĩ." action={<div className="flex flex-wrap gap-2"><Link to="/technician/results" className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-teal-300 hover:text-teal-800"><ClipboardList className="size-4" /> Kết quả vừa trả</Link><Button variant="secondary" onClick={orders.refresh}><RefreshCw className="size-4" /> Làm mới</Button></div>} />
     {notice && <p role={notice.type === 'error' ? 'alert' : 'status'} className={`mb-5 flex items-center gap-2 rounded-xl border p-3 text-sm font-semibold ${notice.type === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>{notice.type === 'error' ? <XCircle className="size-5" /> : <CheckCircle2 className="size-5" />}{notice.text}</p>}
     <Card className="overflow-hidden">{orders.loading ? <div className="grid min-h-72 place-items-center"><span className="size-9 animate-spin rounded-full border-4 border-teal-100 border-t-teal-700" /></div> : orders.error ? <div className="p-8 text-center"><XCircle className="mx-auto size-10 text-rose-500" /><p className="mt-3 text-sm text-slate-500">{orders.error}</p><Button className="mt-5" onClick={orders.refresh}>Thử lại</Button></div> : !rows.length ? <EmptyState icon={<FlaskConical className="size-6" />} title="Không còn chỉ định chờ" body="Các chỉ định mới từ bác sĩ sẽ xuất hiện tại đây." /> : <>
       <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-display text-lg font-bold text-slate-900">Danh sách chỉ định</h2><p className="mt-1 text-sm text-slate-500">Trang {page} · tối đa 20 chỉ định</p></div><div className="flex items-center gap-3"><Button variant="secondary" disabled title="FoMed API hiện chưa có endpoint tải file đính kèm cho kết quả"><Paperclip className="size-4" /> Đính kèm file</Button><Badge tone="warning">{rows.length} đang chờ</Badge></div></div>

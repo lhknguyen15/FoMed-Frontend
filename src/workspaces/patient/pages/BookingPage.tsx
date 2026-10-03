@@ -32,7 +32,7 @@ export default function BookingPage() {
   const book = async () => {
     if (!doctorId || !selectedSlot || reason.trim().length < 3) return
     setSubmitting(true); setError(''); setMessage('')
-    try { await appointmentApi.book({ doctorId: Number(doctorId), startTime: selectedSlot, serviceId: serviceId ? Number(serviceId) : undefined, reason: reason.trim() || undefined }); setMessage('Đặt lịch thành công. Bạn có thể theo dõi lịch hẹn trong mục “Lịch hẹn của tôi”.'); setSelectedSlot(null) } catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : 'Không thể đặt lịch vào thời điểm này.') } finally { setSubmitting(false) }
+    try { await appointmentApi.book({ doctorId: Number(doctorId), startTime: selectedSlot, serviceId: serviceId ? Number(serviceId) : undefined, reason: reason.trim() || undefined }); setMessage('Đã gửi yêu cầu đặt lịch. Lịch đang chờ lễ tân xác nhận; bạn có thể theo dõi trạng thái trong mục “Lịch hẹn của tôi”.'); setSelectedSlot(null) } catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : 'Không thể đặt lịch vào thời điểm này.') } finally { setSubmitting(false) }
   }
   const changeSpecialty = (value: string) => { setSpecialtyId(value); setDoctorId(''); setSelectedSlot(null) }
   return <AppShell><PageTitle eyebrow="Đặt lịch trực tuyến" title="Chọn lịch khám phù hợp" description="Chọn chuyên khoa, bác sĩ và một khung giờ còn trống." action={<Button variant="secondary" onClick={() => navigate('/my-appointments')}>Xem lịch hẹn của tôi</Button>} />

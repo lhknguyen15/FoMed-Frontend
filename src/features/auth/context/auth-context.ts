@@ -8,6 +8,7 @@ export type AuthContextValue = {
   isReady: boolean
   login: (request: LoginRequest, remember: boolean) => Promise<SessionUser>
   register: (request: RegisterPatientRequest) => Promise<SessionUser>
+  updateFullName: (fullName: string) => void
   forgotPassword: (email: string) => Promise<string>
   logout: () => void
 }

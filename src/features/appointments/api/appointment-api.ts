@@ -24,6 +24,7 @@ export const appointmentApi = {
   waitingQueue: (date: string, doctorId?: number) => apiRequest<Appointment[]>(`/appointments/waiting-queue?date=${date}${doctorId ? `&doctorId=${doctorId}` : ''}`),
   doctorQueue: (date: string) => apiRequest<DoctorQueuePatient[]>(`/appointments/doctor-queue?date=${date}`),
   checkIn: (id: number, request: AppointmentStatusChangeRequest = {}) => apiRequest<Appointment>(`/appointments/${id}/check-in`, { method: 'PUT', body: JSON.stringify(request) }),
+  confirm: (id: number, request: AppointmentStatusChangeRequest = {}) => apiRequest<Appointment>(`/appointments/${id}/confirm`, { method: 'PUT', body: JSON.stringify(request) }),
   noShow: (id: number, request: AppointmentStatusChangeRequest = {}) => apiRequest<Appointment>(`/appointments/${id}/no-show`, { method: 'PUT', body: JSON.stringify(request) }),
   callNext: (date: string, doctorId?: number, request: AppointmentStatusChangeRequest = {}) => apiRequest<Appointment>(`/appointments/call-next?date=${date}${doctorId ? `&doctorId=${doctorId}` : ''}`, { method: 'POST', body: JSON.stringify(request) }),
   moveToEnd: (id: number, request: AppointmentStatusChangeRequest = {}) => apiRequest<Appointment>(`/appointments/${id}/move-to-end`, { method: 'PUT', body: JSON.stringify(request) }),

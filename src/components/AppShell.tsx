@@ -1,6 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Bell, ChevronDown, HelpCircle, LogOut, Menu, PanelLeftClose, Search, Settings, X } from 'lucide-react'
+import { ChevronDown, KeyRound, LogOut, Menu, PanelLeftClose, UserRound, X } from 'lucide-react'
 import { roleHome, roleNavigation } from '../data/navigation'
 import type { Role } from '../types'
 import { useAuth } from '../features/auth/hooks/useAuth'
@@ -18,20 +18,53 @@ function detectRole(path: string): Role {
   return 'Bệnh nhân'
 }
 
+function initialRole(path: string): Role {
+  if (!path.startsWith('/account')) return detectRole(path)
+  const savedRole = sessionStorage.getItem('fomed_active_role')
+  return roleLabels.includes(savedRole as Role) ? savedRole as Role : 'Bệnh nhân'
+}
+
 export default function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const [role, setRole] = useState<Role>(() => detectRole(location.pathname))
+  const [role, setRole] = useState<Role>(() => initialRole(location.pathname))
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [roleOpen, setRoleOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const profileName = user?.fullName ?? ''
+  const profileMenuRef = useRef<HTMLDivElement>(null)
   const availableRoles = roleLabels.filter((label) => user?.roles.some((roleName) => roleName.toLowerCase() === apiRoleByLabel[label].toLowerCase()))
 
   useEffect(() => {
-    setRole(detectRole(location.pathname))
+    if (!location.pathname.startsWith('/account')) {
+      const nextRole = detectRole(location.pathname)
+      setRole(nextRole)
+      sessionStorage.setItem('fomed_active_role', nextRole)
+    } else {
+      const validRoles = roleLabels.filter((label) => user?.roles.some((roleName) => roleName.toLowerCase() === apiRoleByLabel[label].toLowerCase()))
+      if (!validRoles.includes(role) && validRoles.length > 0) {
+        setRole(validRoles[0])
+        sessionStorage.setItem('fomed_active_role', validRoles[0])
+      }
+    }
     setMobileOpen(false)
-  }, [location.pathname])
+  }, [location.pathname, role, user])
+
+  useEffect(() => {
+    if (!profileMenuOpen) return
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (event.target instanceof Node && !profileMenuRef.current?.contains(event.target)) setProfileMenuOpen(false)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setProfileMenuOpen(false) }
+    document.addEventListener('pointerdown', closeOnOutsideClick)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [profileMenuOpen])
 
   const changeRole = (nextRole: Role) => {
     setRole(nextRole)
@@ -70,8 +103,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </nav>
 
       <div className="border-t border-slate-100 p-3">
-        <button className={`flex h-10 w-full items-center rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-100 ${collapsed ? 'justify-center' : 'gap-3 px-3'}`}><HelpCircle className="size-[18px]" />{!collapsed && 'Trợ giúp & hỗ trợ'}</button>
-        <button onClick={() => setCollapsed(!collapsed)} className="mt-1 hidden h-10 w-full items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 lg:flex"><PanelLeftClose className={`size-[18px] transition ${collapsed ? 'rotate-180' : ''}`} /></button>
+        <button onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'} title={collapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'} className="hidden h-10 w-full items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 lg:flex"><PanelLeftClose className={`size-[18px] transition ${collapsed ? 'rotate-180' : ''}`} /></button>
       </div>
     </aside>
 
@@ -79,20 +111,21 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-xl sm:px-7">
         <div className="flex items-center gap-3">
           <button className="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-600 lg:hidden" onClick={() => setMobileOpen(true)}><Menu className="size-5" /></button>
-          <label className="relative hidden w-72 md:block">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <input placeholder="Tìm bệnh nhân, lịch hẹn..." className="h-10 w-full rounded-xl bg-slate-100 pl-10 pr-3 text-sm outline-none transition focus:bg-white focus:ring-2 focus:ring-teal-600/20" />
-          </label>
+          <span className="hidden text-sm font-semibold text-slate-500 sm:block">Không gian {role.toLocaleLowerCase('vi')}</span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button className="relative grid size-10 place-items-center rounded-xl text-slate-500 hover:bg-slate-100"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full border-2 border-white bg-rose-500" /></button>
-          <button onClick={() => navigate('/account/change-password')} title="Đổi mật khẩu" className="hidden size-10 place-items-center rounded-xl text-slate-500 hover:bg-slate-100 sm:grid"><Settings className="size-5" /></button>
-          <span className="mx-1 hidden h-7 w-px bg-slate-200 sm:block" />
-          <div className="flex items-center gap-2.5">
-            <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-amber-100 to-orange-200 text-sm font-extrabold text-amber-800">{user?.fullName.split(' ').map((part) => part[0]).slice(-2).join('').toUpperCase() || 'FM'}</span>
-            <span className="hidden text-left md:block"><span className="block max-w-36 truncate text-sm font-bold text-slate-800">{user?.fullName || 'Người dùng FoMed'}</span><span className="block text-[11px] text-slate-500">{role}</span></span>
-            <button onClick={() => { logout(); navigate('/login', { replace: true }) }} title="Đăng xuất" className="hidden text-slate-400 hover:text-rose-600 sm:block"><LogOut className="size-4" /></button>
-          </div>
+        <div ref={profileMenuRef} className="relative">
+          <button type="button" aria-label="Mở menu hồ sơ tài khoản" aria-haspopup="menu" aria-expanded={profileMenuOpen} onClick={() => setProfileMenuOpen((open) => !open)} className="flex max-w-[min(18rem,65vw)] items-center gap-2 rounded-xl p-1.5 text-left hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 sm:gap-3 sm:px-2">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-amber-100 to-orange-200 text-sm font-extrabold text-amber-800">{profileName.split(' ').map((part) => part[0]).slice(-2).join('').toUpperCase() || 'FM'}</span>
+            <span className="hidden min-w-0 text-left sm:block"><span className="block max-w-40 truncate text-sm font-bold text-slate-800">{profileName || 'Người dùng FoMed'}</span><span className="block text-[11px] text-slate-500">{role}</span></span>
+            <ChevronDown className={`hidden size-4 shrink-0 text-slate-400 transition sm:block ${profileMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {profileMenuOpen && <div role="menu" aria-label="Menu tài khoản" className="absolute right-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-900/10">
+            <div className="border-b border-slate-100 px-3 py-2.5 sm:hidden"><p className="truncate text-sm font-bold text-slate-800">{profileName || 'Người dùng FoMed'}</p><p className="mt-0.5 text-xs text-slate-500">{role}</p></div>
+            <button type="button" role="menuitem" onClick={() => { setProfileMenuOpen(false); navigate('/account/profile') }} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"><UserRound className="size-[18px] text-teal-700" /><span><span className="block font-semibold">Quản lý hồ sơ</span><span className="mt-0.5 block text-xs font-normal text-slate-500">Thông tin cá nhân và liên hệ</span></span></button>
+            <button type="button" role="menuitem" onClick={() => { setProfileMenuOpen(false); navigate('/account/change-password') }} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"><KeyRound className="size-[18px] text-slate-500" />Đổi mật khẩu</button>
+            <div className="my-1 border-t border-slate-100" />
+            <button type="button" role="menuitem" onClick={() => { setProfileMenuOpen(false); sessionStorage.removeItem('fomed_active_role'); logout(); navigate('/login', { replace: true }) }} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-rose-600 hover:bg-rose-50"><LogOut className="size-[18px]" />Đăng xuất</button>
+          </div>}
         </div>
       </header>
       <main className="mx-auto max-w-[1540px] p-4 sm:p-7 lg:p-8">{children}</main>

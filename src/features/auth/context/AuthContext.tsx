@@ -59,6 +59,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(response.user)
       return response.user
     },
+    updateFullName: (fullName) => {
+      setUser((current) => {
+        if (!current) return current
+        const updated = { ...current, fullName }
+        const session = getStoredSession()
+        if (session) saveStoredSession({ ...session, user: updated })
+        return updated
+      })
+    },
     forgotPassword: authApi.forgotPassword,
     logout: () => {
       clearStoredSession()

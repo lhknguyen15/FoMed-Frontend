@@ -4,10 +4,12 @@ Tài liệu này đối chiếu workflow VC-07 đến VC-11 trong review-erd-net
 
 ## Luồng thao tác chuẩn
 
-1. Vào **Đặt lịch tại quầy**, tìm bệnh nhân theo tên, số điện thoại hoặc mã bệnh nhân.
-2. Nếu chưa có hồ sơ, chọn **Tạo nhanh hồ sơ** ngay trên trang đặt lịch. Modal VC-09 chỉ yêu cầu họ tên và số điện thoại; sau khi xác nhận, bệnh nhân được chọn ngay trong lịch đặt.
-3. Chọn chuyên khoa, bác sĩ, dịch vụ, ngày và slot trống; sau đó chọn **Đặt lịch**.
-4. Màn hình **Hồ sơ bệnh nhân** dùng cho tra cứu/cập nhật độc lập. Khi đã chọn một bệnh nhân, nút **Đặt lịch** sẽ chuyển sang đặt lịch với bệnh nhân đó.
+1. Bệnh nhân đặt trực tuyến hoặc lễ tân đặt tại quầy; lịch mới bắt đầu ở trạng thái `Pending` (chờ xác nhận).
+2. Tại **Bàn tiếp đón**, chọn đúng ngày hẹn, rà soát lịch `Pending` và bấm **Xác nhận**. Sau xác nhận, trạng thái chuyển sang `Confirmed` (chờ đến).
+3. Vào ngày khám, lễ tân check-in bệnh nhân. Chỉ lịch `Confirmed` đã check-in xuất hiện trong hàng chờ bác sĩ.
+4. Để đặt tại quầy: tìm bệnh nhân theo tên, số điện thoại hoặc mã bệnh nhân. Nếu chưa có hồ sơ, chọn **Tạo nhanh hồ sơ** ngay trên trang đặt lịch. Modal VC-09 chỉ yêu cầu họ tên và số điện thoại; sau khi xác nhận, bệnh nhân được chọn ngay trong lịch đặt.
+5. Chọn chuyên khoa, bác sĩ, dịch vụ, ngày và slot trống; sau đó chọn **Đặt lịch**.
+6. Màn hình **Hồ sơ bệnh nhân** dùng cho tra cứu/cập nhật độc lập. Khi đã chọn một bệnh nhân, nút **Đặt lịch** sẽ chuyển sang đặt lịch với bệnh nhân đó.
 
 Hồ sơ tạo nhanh dùng `POST /api/patients/staff`, không có `UserId` nên được xác định là khách vãng lai/chưa có tài khoản. Nút **Tạo hồ sơ mới** ở VC-08 vẫn mở form đầy đủ để quản lý hồ sơ lâu dài. Nút điều hướng `/reception` chỉ dùng để theo dõi lịch hẹn và check-in; không lặp lại nút tạo hồ sơ. Sidebar dùng trạng thái active chính xác để không đồng thời tô sáng `/reception` và `/reception/patients`.
 
@@ -15,11 +17,12 @@ Hồ sơ tạo nhanh dùng `POST /api/patients/staff`, không có `UserId` nên 
 
 - UI: `/reception`
 - API: `GET /api/appointments/staff-appointments?date={yyyy-MM-dd}&status=&doctorId=`
+- Xác nhận: `PUT /api/appointments/{id}/confirm`, body tùy chọn `{ reason }`; API cho phép bác sĩ phụ trách, lễ tân hoặc admin, giao diện hiện đặt thao tác này tại quầy tiếp đón.
 - Check-in: `PUT /api/appointments/{id}/check-in`, body tùy chọn `{ reason }`
 - Không đến: `PUT /api/appointments/{id}/no-show`, body tùy chọn `{ reason }`
 - Điều hướng: tạo bệnh nhân mới tại `/reception/patients`, đặt lịch hộ tại `/reception/booking`, hàng chờ tại `/reception/queue`.
 
-Review có thể biểu diễn lịch hẹn bằng endpoint tổng quát và PATCH; FoMed-API thực tế dùng endpoint staff riêng và PUT. UI hiển thị trạng thái theo response, đồng thời chặn thao tác không phù hợp với trạng thái hiện tại.
+Review có thể biểu diễn lịch hẹn bằng endpoint tổng quát và PATCH; FoMed-API thực tế dùng endpoint staff riêng và PUT. Trang mặc định lọc ngày hiện tại; lịch tương lai chỉ hiện sau khi chọn đúng ngày. UI hiển thị trạng thái theo response, đếm lịch chờ xác nhận và chặn thao tác không phù hợp với trạng thái hiện tại.
 
 ## VC-08 — Hồ sơ bệnh nhân
 
