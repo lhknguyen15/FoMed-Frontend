@@ -144,6 +144,8 @@ node tests/public-navigation.audit.cjs
 node tests/public-carousel.audit.cjs
 node tests/user-messages.audit.cjs
 node tests/sepay-success.audit.cjs
+node tests/service-order-results.audit.cjs
+node tests/invoice-filters.audit.cjs
 ```
 
 Các kiểm tra này không thay thế nghiệm thu trên trình duyệt/API thật. Đọc hướng dẫn

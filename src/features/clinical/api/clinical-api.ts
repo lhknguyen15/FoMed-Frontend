@@ -19,7 +19,7 @@ export const clinicalApi = {
   record: (id: number) => apiRequest<MedicalRecord>(`/clinical/records/${id}`),
   recordHistory: (id: number) => apiRequest<PatientHistorySummary[]>(`/clinical/records/${id}/history`),
   prescription: (id: number) => apiRequest<Prescription>(`/clinical/records/${id}/prescription`),
-  serviceOrders: (id: number) => apiRequest<ServiceOrder[]>(`/clinical/records/${id}/services`),
+  serviceOrders: (id: number, signal?: AbortSignal) => apiRequest<ServiceOrder[]>(`/clinical/records/${id}/services`, { signal }),
   createRecord: (appointmentId: number, request: SaveMedicalRecordRequest = {}) => apiRequest<MedicalRecord>(`/clinical/appointments/${appointmentId}/record`, { method: 'POST', body: recordBody(request) }),
   updateRecord: (id: number, request: SaveMedicalRecordRequest) => apiRequest<MedicalRecord>(`/clinical/records/${id}`, { method: 'PUT', body: recordBody(request) }),
   createPrescription: (id: number, request: CreatePrescriptionRequest) => apiRequest<Prescription>(`/clinical/records/${id}/prescription`, { method: 'POST', body: JSON.stringify(request) }),
