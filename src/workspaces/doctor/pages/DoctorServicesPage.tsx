@@ -1,20 +1,16 @@
 import { notify } from '../../../shared/notifications/notify'
 import { displayError } from '../../../shared/api/user-messages'
-import { ArrowLeft, FlaskConical, RefreshCw, X, XCircle } from 'lucide-react'
+import { ArrowLeft, FlaskConical, X, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AppShell from '../../../components/AppShell'
-import { Badge, Button, Card, EmptyState, PageTitle } from '../../../components/ui'
+import { Button, Card, PageTitle } from '../../../components/ui'
+import ServiceOrderResults from '../../../features/clinical/components/ServiceOrderResults'
+import { useRecordServiceOrders } from '../../../features/clinical/hooks/useRecordServiceOrders'
 import AttachmentPanel from '../../../features/clinical/components/AttachmentPanel'
 import { clinicalApi } from '../../../features/clinical/api/clinical-api'
 import type { ServiceOrder } from '../../../features/clinical/types/clinical'
 import { useApiQuery } from '../../../shared/hooks/useApiQuery'
-
-const statusLabel: Record<number, { label: string; tone: 'warning' | 'success' | 'danger' | 'neutral' }> = {
-  0: { label: 'Chờ thực hiện', tone: 'warning' },
-  1: { label: 'Đã có kết quả', tone: 'success' },
-  2: { label: 'Đã hủy', tone: 'danger' },
-}
 
 function ActionCell({ order, editable, busy, onCancel }: { order: ServiceOrder; editable: boolean; busy: boolean; onCancel: (id: number) => void }) {
   if (order.status === 0 && editable) {
@@ -36,7 +32,7 @@ export default function DoctorServicesPage() {
   const [cancelingId, setCancelingId] = useState<number | null>(null)
   const [notice, setNotice] = useState<{ type: 'error'; text: string } | null>(null)
   const record = useApiQuery(`doctor-services-record-${id}`, () => clinicalApi.record(id))
-  const orders = useApiQuery(`doctor-services-orders-${id}`, () => clinicalApi.serviceOrders(id))
+  const orders = useRecordServiceOrders(id)
   const catalog = useApiQuery('doctor-services-catalog', () => clinicalApi.servicesCatalog())
   const editable = Boolean(record.data?.id === id && !record.data.isFinalized && !record.loading && !record.error)
 
@@ -60,6 +56,10 @@ export default function DoctorServicesPage() {
 
   const cancel = async (orderId: number) => {
     if (busy || !editable || record.loading || record.error) return
+    if (orders.loading || orders.error || !orders.data?.some(order => order.id === orderId && order.medicalRecordId === id && order.status === 0)) {
+      setNotice({ type: 'error', text: 'Chỉ định có thể đã thay đổi. Vui lòng cập nhật kết quả trước khi hủy.' })
+      return
+    }
     setBusy(true)
     setNotice(null)
     try {
@@ -85,11 +85,7 @@ export default function DoctorServicesPage() {
       {catalog.error && <p className="mt-3 text-sm text-rose-600">{catalog.error}</p>}
     </Card>
 
-    {orders.loading ? <Card className="grid min-h-56 place-items-center"><span className="size-9 animate-spin rounded-full border-4 border-teal-100 border-t-teal-700" /></Card> : orders.error ? <Card className="p-8 text-center"><XCircle className="mx-auto size-10 text-rose-500" /><p className="mt-3 text-sm text-slate-500">{orders.error}</p><Button className="mt-5" onClick={orders.refresh}><RefreshCw className="size-4" /> Thử lại</Button></Card> : !orders.data?.length ? <EmptyState icon={<FlaskConical className="size-6" />} title="Chưa có chỉ định" body="Các dịch vụ được chỉ định trong lượt khám sẽ hiển thị ở đây." /> : <Card className="overflow-hidden">
-      <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-start sm:justify-between"><div><h2 className="font-display text-lg font-bold text-slate-900">Danh sách chỉ định</h2><p className="mt-1 text-sm text-slate-500">Kỹ thuật viên nhập kết quả cho các chỉ định chờ thực hiện. Chỉ định đã có kết quả được tính phí sau khi bệnh án được chốt.</p></div></div>
-
-      <div className="overflow-x-auto"><table className="data-table min-w-[980px]"><thead><tr><th>Dịch vụ</th><th>SL</th><th>Đơn giá lúc chỉ định</th><th>Kết quả</th><th>Trạng thái</th><th className="min-w-[190px]">Thao tác</th></tr></thead><tbody>{orders.data.map((order) => { const status = statusLabel[order.status] ?? { label: 'Chưa xác định', tone: 'neutral' as const }; return <tr key={order.id}><td><strong className="text-slate-800">{order.serviceName}</strong><small className="mt-1 block text-xs text-slate-400">Chỉ định #{order.id}</small></td><td>{order.quantity}</td><td>{order.unitPriceSnapshot.toLocaleString('vi-VN')} đ</td><td><span className="block max-w-xs whitespace-normal">{order.resultSummary || order.conclusion || 'Chưa có kết quả'}</span>{order.referenceRange && <small className="text-slate-400">Tham chiếu: {order.referenceRange}</small>}{order.resultAt && <small className="block text-xs text-slate-400">Ghi nhận: {new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(order.resultAt))}</small>}</td><td><Badge tone={status.tone}>{status.label}</Badge></td><td><ActionCell order={order} editable={editable} busy={busy} onCancel={setCancelingId} /></td></tr> })}</tbody></table></div>
-    </Card>}
+    <ServiceOrderResults orders={orders.data} loading={orders.loading} error={orders.error} updatedAt={orders.updatedAt} onRefresh={orders.refresh} renderAction={order => <ActionCell order={order} editable={editable} busy={busy} onCancel={setCancelingId} />} />
 
     {record.data && !record.error && <div className="mt-5"><AttachmentPanel recordId={id} canUpload={editable} /></div>}
     {cancelingId !== null && <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/40 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="cancel-order-title"><div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.15em] text-rose-600">Chỉ định cận lâm sàng</p><h2 id="cancel-order-title" className="mt-1 font-display text-2xl font-bold text-slate-900">Hủy chỉ định?</h2></div><button type="button" aria-label="Đóng" onClick={() => setCancelingId(null)} className="grid size-9 shrink-0 place-items-center rounded-xl text-slate-400 hover:bg-slate-100" disabled={busy}><X className="size-5" /></button></div><p className="mt-4 text-sm leading-6 text-slate-600">Chỉ định chỉ được hủy khi còn trạng thái <strong>chờ thực hiện</strong>. Nếu kỹ thuật viên đã nhập kết quả, chỉ định sẽ giữ trạng thái <strong>đã có kết quả</strong> và vẫn được tính phí.</p>{notice && <p role="alert" className="mt-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700"><XCircle className="size-5 shrink-0" />{notice.text}</p>}<div className="mt-7 flex justify-end gap-3"><Button type="button" variant="secondary" onClick={() => setCancelingId(null)} disabled={busy}>Giữ lại</Button><Button type="button" variant="danger" onClick={() => void cancel(cancelingId)} disabled={busy}>{busy ? 'Đang hủy...' : 'Xác nhận hủy'}</Button></div></div></div>}

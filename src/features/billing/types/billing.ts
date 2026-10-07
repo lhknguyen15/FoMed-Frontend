@@ -26,6 +26,10 @@ export type UpdateMedicalServiceInput = CreateMedicalServiceInput & {
 export type PaymentRequest = { amount: number; method: 0 | 1 | 2 | 3; note?: string; cashReceived?: number; idempotencyKey?: string }
 export type InvoiceCancelRequest = { reason?: string }
 export type InvoiceCandidate = { medicalRecordId: number; appointmentId: number; patientId: number; patientName: string; appointmentStartTime: string; consultationFee: number; serviceAndMedicineAmount: number; estimatedTotalAmount: number }
+export type InvoiceStatusFilter = 'all' | 'outstanding' | 'unpaid' | 'partial' | 'paid' | 'cancelled'
+export type InvoiceFilters = { keyword: string; status: InvoiceStatusFilter; fromDate: string; toDate: string }
+export type InvoiceSummary = Pick<Invoice, 'id' | 'invoiceNo' | 'patientId' | 'medicalRecordId' | 'totalAmount' | 'paidAmount' | 'status'> & { patientCode: string; patientName: string; createdAt: string }
+export type InvoiceSearchPage = { items: InvoiceSummary[]; page: number; pageSize: number; totalCount: number }
 
 export type InvoiceLine = { description?: string | null; quantity: number; unitPrice: number; amount: number }
 export type Payment = {

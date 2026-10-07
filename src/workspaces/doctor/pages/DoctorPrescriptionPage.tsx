@@ -3,6 +3,7 @@ import { displayError } from '../../../shared/api/user-messages'
 import { ArrowLeft, Printer, Pill, Save, Search, Trash2, TriangleAlert, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import RecordServiceResultsPanel from '../../../features/clinical/components/RecordServiceResultsPanel'
 import AppShell from '../../../components/AppShell'
 import { Badge, Button, Card, EmptyState, PageTitle } from '../../../components/ui'
 import { clinicalApi } from '../../../features/clinical/api/clinical-api'
@@ -95,6 +96,7 @@ function PrescriptionEditor({ id }: { id: number }) {
   return <AppShell>
     <PageTitle eyebrow="Khám bệnh" title="Kê đơn thuốc" description={`${context.data?.patientName || `Bệnh án #${id}`} · kiểm tra dị ứng và tồn thuốc trước khi lưu.`}
       action={<Button variant="secondary" onClick={() => navigate(`/doctor/exam/${id}`)}><ArrowLeft className="size-4" /> Về bệnh án</Button>} />
+    {!record.loading && !record.error && record.data?.id === id && <div className="mb-5 print:hidden"><RecordServiceResultsPanel key={id} recordId={id} /></div>}
     {notice && <p role="alert" className="mb-5 flex items-start gap-2 rounded-xl border p-3 text-sm font-semibold border-rose-200 bg-rose-50 text-rose-700"><XCircle className="size-5 shrink-0" />{notice.text}</p>}
     {record.data?.isFinalized && <p className="mb-5 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm font-semibold text-sky-700">Bệnh án đã chốt, chỉ có thể xem lại đơn thuốc.</p>}
     {prescription.data?.isDispensed && <p role="status" className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">Đơn thuốc đã được cấp phát, không thể chỉnh sửa. Các dòng thuốc và lịch sử cấp phát được giữ nguyên.</p>}
