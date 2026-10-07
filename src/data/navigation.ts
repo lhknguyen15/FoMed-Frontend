@@ -3,7 +3,17 @@ import {
   HeartPulse, LayoutDashboard, PackageOpen, Pill, ReceiptText, ShieldCheck, Stethoscope,
   UserCog, UserRound, UsersRound, WalletCards,
 } from 'lucide-react'
-import type { NavItem, Role } from '../types'
+import type { NavItem, NavigationCountKey, Role } from '../types'
+
+// Missing/failed snapshots must not be presented as a zero or a guessed count.
+export function validNavigationCount(value: unknown): number | null {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : null
+}
+
+export function navigationCountLabel(key: NavigationCountKey, count: number): string {
+  const description = key === 'patient-upcoming' ? 'lịch hẹn sắp tới' : key === 'doctor-waiting' ? 'lượt chờ của tôi hôm nay' : 'lượt chờ hôm nay'
+  return `${count.toLocaleString('vi-VN')} ${description}, theo danh sách đã tải`
+}
 
 export const roleHome: Record<Role, string> = {
   'Bệnh nhân': '/booking',
@@ -17,7 +27,7 @@ export const roleHome: Record<Role, string> = {
 export const roleNavigation: Record<Role, NavItem[]> = {
   'Bệnh nhân': [
     { label: 'Đặt lịch khám', path: '/booking', icon: CalendarDays },
-    { label: 'Lịch hẹn của tôi', path: '/my-appointments', icon: Clock3, badge: '2' },
+    { label: 'Lịch hẹn của tôi', path: '/my-appointments', icon: Clock3, countKey: 'patient-upcoming' },
     { label: 'Hồ sơ sức khỏe', path: '/my-records', icon: FileText },
     { label: 'Hóa đơn', path: '/my-invoices', icon: ReceiptText },
   ],
@@ -25,21 +35,21 @@ export const roleNavigation: Record<Role, NavItem[]> = {
     { label: 'Bàn tiếp đón', path: '/reception', icon: LayoutDashboard },
     { label: 'Hồ sơ bệnh nhân', path: '/reception/patients', icon: UsersRound },
     { label: 'Đặt lịch tại quầy', path: '/reception/booking', icon: CalendarDays },
-    { label: 'Hàng chờ', path: '/reception/queue', icon: Clock3, badge: '6' },
+    { label: 'Hàng chờ', path: '/reception/queue', icon: Clock3, countKey: 'reception-waiting' },
     { label: 'Thu ngân', path: '/reception/cashier', icon: WalletCards },
   ],
   'Bác sĩ': [
-    { label: 'Hàng chờ của tôi', path: '/doctor/queue', icon: UsersRound, badge: '6' },
+    { label: 'Hàng chờ của tôi', path: '/doctor/queue', icon: UsersRound, countKey: 'doctor-waiting' },
     // Phiếu khám, chỉ định và đơn thuốc chỉ có recordId sau khi bác sĩ chọn bệnh nhân.
     // Các màn hình này được mở từ hàng chờ để tránh điều hướng tới một hồ sơ mẫu không tồn tại.
   ],
   'Kỹ thuật viên': [
-    { label: 'Chờ thực hiện', path: '/technician/orders', icon: FlaskConical, badge: '4' },
-    { label: 'Kết quả vừa trả', path: '/technician/results', icon: ClipboardList },
+    { label: 'Chờ thực hiện', path: '/technician/orders', icon: FlaskConical },
+    { label: 'Lịch sử kết quả', path: '/technician/results', icon: ClipboardList },
   ],
   'Dược sĩ': [
     { label: 'Kho thuốc', path: '/pharmacy/inventory', icon: PackageOpen },
-    { label: 'Phát thuốc', path: '/pharmacy/dispense', icon: Pill, badge: '3' },
+    { label: 'Phát thuốc', path: '/pharmacy/dispense', icon: Pill },
     { label: 'Nhập thuốc', path: '/pharmacy/receipt', icon: ReceiptText },
   ],
   'Quản trị': [
@@ -72,10 +82,10 @@ export const screenMeta: Record<string, { eyebrow: string; title: string; descri
   '/technician/orders': { eyebrow: 'Cận lâm sàng', title: 'Chỉ định chờ thực hiện', description: 'Tiếp nhận mẫu và trả kết quả cho bác sĩ.' },
   '/technician/results': { eyebrow: 'Cận lâm sàng', title: 'Kết quả đã trả', description: 'Tra cứu các kết quả hoàn thành trong ngày.' },
   '/pharmacy/inventory': { eyebrow: 'Nhà thuốc', title: 'Kho thuốc & lô hạn dùng', description: 'Theo dõi tồn kho, hạn dùng và cảnh báo nhập hàng.' },
-  '/pharmacy/dispense/451': { eyebrow: 'Nhà thuốc', title: 'Phát thuốc theo đơn', description: 'Xuất kho theo nguyên tắc FEFO và ghi nhận từng lô.' },
+  '/pharmacy/dispense/451': { eyebrow: 'Nhà thuốc', title: 'Phát thuốc theo đơn', description: 'Ưu tiên xuất lô hết hạn trước và ghi nhận từng lô.' },
   '/pharmacy/receipt': { eyebrow: 'Nhà thuốc', title: 'Tạo phiếu nhập thuốc', description: 'Nhập nhiều lô thuốc từ nhà cung cấp.' },
   '/admin/doctors': { eyebrow: 'Quản trị hệ thống', title: 'Bác sĩ & chuyên khoa', description: 'Quản lý hồ sơ hành nghề và chuyên khoa phụ trách.' },
-  '/admin/schedules': { eyebrow: 'Quản trị hệ thống', title: 'Lịch làm việc & nghỉ phép', description: 'Cấu hình ca khám, thời lượng slot và thời gian nghỉ.' },
+  '/admin/schedules': { eyebrow: 'Quản trị hệ thống', title: 'Lịch làm việc & nghỉ phép', description: 'Cấu hình ca khám, thời lượng mỗi lượt khám và thời gian nghỉ.' },
   '/admin/services': { eyebrow: 'Quản trị hệ thống', title: 'Danh mục dịch vụ', description: 'Quản lý dịch vụ khám, xét nghiệm và đơn giá.' },
   '/admin/users': { eyebrow: 'Quản trị hệ thống', title: 'Người dùng & phân quyền', description: 'Kiểm soát tài khoản, vai trò và trạng thái truy cập.' },
   '/admin/reports': { eyebrow: 'Tổng quan vận hành', title: 'Xin chào, Minh Anh', description: 'Đây là tình hình hoạt động của phòng khám hôm nay.' },

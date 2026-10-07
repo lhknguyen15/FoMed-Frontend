@@ -1,7 +1,10 @@
 import { apiRequest } from '../../../shared/api/http-client'
 import type { AdjustStockRequest, DispensePrescriptionResponse, InventoryBatch, InventoryReceiptRequest, InventoryReceiptResponse, StockTransaction, ReceiveStockRequest } from '../types/pharmacy'
+import type { PharmacyPrescription, PharmacyPrescriptionPage } from '../types/pharmacy'
 
 export const pharmacyApi = {
+  prescriptions: (keyword: string, status = 'pending', page = 1) => apiRequest<PharmacyPrescriptionPage>(`/pharmacy/prescriptions?${new URLSearchParams({ keyword, status, page: String(page) })}`),
+  prescription: (id: number) => apiRequest<PharmacyPrescription>(`/pharmacy/prescriptions/${id}`),
   inventory: (page = 1, medicineId?: number, expiringBefore?: string) => {
     const params = new URLSearchParams({ page: String(page) })
     if (medicineId) params.set('medicineId', String(medicineId))

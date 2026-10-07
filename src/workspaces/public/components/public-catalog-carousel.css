@@ -1,0 +1,52 @@
+.public-catalog-track {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: #99cfc6 transparent;
+  padding-block: 0.5rem 1rem;
+  border-radius: 1rem;
+}
+
+.public-catalog-track:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 3px;
+}
+
+.public-catalog-slide {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 calc(100% - 2rem);
+  scroll-snap-align: start;
+}
+
+.public-catalog-slide > * {
+  width: 100%;
+}
+
+.public-catalog-track--specialties .public-catalog-slide {
+  flex-basis: calc((100% - 0.5rem) / 1.5);
+}
+
+@media (min-width: 640px) {
+  .public-catalog-slide {
+    flex-basis: calc((100% - 1rem) / 2);
+  }
+
+  .public-catalog-track--specialties .public-catalog-slide {
+    flex-basis: calc((100% - 2rem) / 3);
+  }
+}
+
+@media (min-width: 1024px) {
+  .public-catalog-slide {
+    flex-basis: calc((100% - 3rem) / 4);
+  }
+
+  .public-catalog-track--specialties .public-catalog-slide {
+    flex-basis: calc((100% - 4rem) / 5);
+  }
+}

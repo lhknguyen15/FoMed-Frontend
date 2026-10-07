@@ -1,3 +1,4 @@
+import { displayError } from '../../../shared/api/user-messages'
 import { useState } from 'react'
 import { scheduleAdminApi, type SaveDoctorTimeOffInput } from '../api/schedule-api'
 
@@ -11,7 +12,7 @@ export function useTimeOffAdmin() {
     try {
       return await operation()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Không thể lưu lịch nghỉ.')
+      setError(displayError(reason, 'Không thể lưu lịch nghỉ.'))
       throw reason
     } finally {
       setSubmitting(false)

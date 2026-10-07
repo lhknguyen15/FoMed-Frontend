@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDown, KeyRound, LogOut, Menu, PanelLeftClose, UserRound, X } from 'lucide-react'
-import { roleHome, roleNavigation } from '../data/navigation'
-import type { Role } from '../types'
+import { navigationCountLabel, roleHome, roleNavigation, validNavigationCount } from '../data/navigation'
+import type { NavigationCounts, Role } from '../types'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import logo from '../assets/images/FoMed_Logo.png'
 
@@ -24,7 +24,7 @@ function initialRole(path: string): Role {
   return roleLabels.includes(savedRole as Role) ? savedRole as Role : 'Bệnh nhân'
 }
 
-export default function AppShell({ children }: { children: ReactNode }) {
+export default function AppShell({ children, navigationCounts }: { children: ReactNode; navigationCounts?: NavigationCounts }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
@@ -35,6 +35,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const profileName = user?.fullName ?? ''
   const profileMenuRef = useRef<HTMLDivElement>(null)
+  const roleButtonRef = useRef<HTMLButtonElement>(null)
+  const roleChoicesId = useId()
   const availableRoles = roleLabels.filter((label) => user?.roles.some((roleName) => roleName.toLowerCase() === apiRoleByLabel[label].toLowerCase()))
 
   useEffect(() => {
@@ -80,26 +82,30 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <span className="grid size-10 shrink-0 place-items-center rounded-[14px] bg-white shadow-md shadow-teal-900/10"><img src={logo} alt="FoMed" className="size-9 object-contain" /></span>
           {!collapsed && <span className="font-display text-[22px] font-extrabold tracking-tight text-slate-900">Fo<span className="text-teal-700">Med</span></span>}
         </button>
-        <button className="text-slate-400 lg:hidden" onClick={() => setMobileOpen(false)}><X className="size-5" /></button>
+        <button aria-label="Đóng thanh điều hướng" className="text-slate-400 lg:hidden" onClick={() => setMobileOpen(false)}><X className="size-5" /></button>
       </div>
 
-      <div className={`relative mx-3 mt-5 ${collapsed ? 'hidden lg:block' : ''}`}>
-        <button onClick={() => setRoleOpen(!roleOpen)} className={`flex w-full items-center rounded-xl border border-slate-200 bg-slate-50 p-2 text-left hover:bg-slate-100 ${collapsed ? 'justify-center' : 'gap-3'}`}>
-          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-teal-100 text-xs font-extrabold text-teal-800">{role.slice(0, 2).toUpperCase()}</span>
+      <div onKeyDown={(event) => { if (event.key === 'Escape' && roleOpen) { event.stopPropagation(); setRoleOpen(false); roleButtonRef.current?.focus() } }} className={`relative mx-3 mt-5 ${collapsed ? 'hidden lg:block' : ''}`}>
+        <button ref={roleButtonRef} type="button" aria-label={`Chọn vai trò: ${role}`} aria-expanded={roleOpen} aria-controls={roleChoicesId} title={collapsed ? `Chọn vai trò: ${role}` : undefined} onClick={() => setRoleOpen(!roleOpen)} className={`flex w-full items-center rounded-xl border border-slate-200 bg-slate-50 p-2 text-left hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ${collapsed ? 'justify-center' : 'gap-3'}`}>
+          <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-lg bg-teal-100 text-teal-800"><UserRound className="size-5" strokeWidth={2} /></span>
           {!collapsed && <><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-slate-800">{role}</span><span className="block text-[11px] text-slate-500">Không gian làm việc</span></span>{availableRoles.length > 1 && <ChevronDown className="size-4 text-slate-400" />}</>}
         </button>
-        {roleOpen && <div className={`absolute z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl ${collapsed ? 'left-14 w-52' : 'inset-x-0'}`}>
+        {roleOpen && <div id={roleChoicesId} className={`absolute z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl ${collapsed ? 'left-14 w-52' : 'inset-x-0'}`}>
           {availableRoles.map((item) => <button key={item} onClick={() => changeRole(item)} className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${item === role ? 'bg-teal-50 font-bold text-teal-800' : 'text-slate-600 hover:bg-slate-50'}`}><span className="size-1.5 rounded-full bg-current" />{item}</button>)}
         </div>}
       </div>
 
       <nav className="mt-5 flex-1 space-y-1 overflow-y-auto px-3">
         {!collapsed && <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[.18em] text-slate-400">Menu chính</p>}
-        {roleNavigation[role].map(({ label, path, icon: Icon, badge }) => <NavLink key={path} to={path} end={path === roleHome[role]} title={collapsed ? label : undefined} className={({ isActive }) => `group flex h-11 items-center rounded-xl text-sm font-semibold transition ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} ${isActive ? 'bg-teal-700 text-white shadow-md shadow-teal-800/10' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>
+        {roleNavigation[role].map(({ label, path, icon: Icon, countKey }) => {
+          const count = validNavigationCount(countKey ? navigationCounts?.[countKey] : undefined)
+          const countLabel = countKey && count !== null ? navigationCountLabel(countKey, count) : ''
+          const accessibleLabel = countLabel ? `${label}: ${countLabel}` : label
+          return <NavLink key={path} to={path} end={path === roleHome[role]} aria-label={accessibleLabel} title={collapsed ? accessibleLabel : undefined} className={({ isActive }) => `group flex h-11 items-center rounded-xl text-sm font-semibold transition ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} ${isActive ? 'bg-teal-700 text-white shadow-md shadow-teal-800/10' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>
           <Icon className="size-[19px] shrink-0" strokeWidth={2} />
           {!collapsed && <span className="min-w-0 flex-1 truncate whitespace-nowrap">{label}</span>}
-          {!collapsed && badge && <span className="grid min-w-5 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 text-[10px]">{badge}</span>}
-        </NavLink>)}
+          {!collapsed && count !== null && <span aria-label={countLabel} title={countLabel} className="grid min-w-5 shrink-0 place-items-center rounded-full bg-white/20 px-1.5 py-0.5 text-[10px]">{count > 99 ? '99+' : count}</span>}
+        </NavLink>})}
       </nav>
 
       <div className="border-t border-slate-100 p-3">
@@ -110,7 +116,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <div className={`transition-all duration-300 ${collapsed ? 'lg:pl-[84px]' : 'lg:pl-[264px]'}`}>
       <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-xl sm:px-7">
         <div className="flex items-center gap-3">
-          <button className="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-600 lg:hidden" onClick={() => setMobileOpen(true)}><Menu className="size-5" /></button>
+          <button aria-label="Mở thanh điều hướng" className="grid size-10 place-items-center rounded-xl border border-slate-200 text-slate-600 lg:hidden" onClick={() => setMobileOpen(true)}><Menu className="size-5" /></button>
           <span className="hidden text-sm font-semibold text-slate-500 sm:block">Không gian {role.toLocaleLowerCase('vi')}</span>
         </div>
         <div ref={profileMenuRef} className="relative">

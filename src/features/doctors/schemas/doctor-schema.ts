@@ -1,4 +1,19 @@
-export type DoctorFormValues = {
+export type DoctorPublicProfileValues = { avatarUrl: string; biography: string; practiceStartYear: string }
+
+export function validateDoctorPublicProfile(values: DoctorPublicProfileValues) {
+  const errors: Partial<Record<keyof DoctorPublicProfileValues, string>> = {}
+  if (values.avatarUrl.trim()) {
+    try {
+      const url = new URL(values.avatarUrl.trim())
+      if (!['https:', 'http:'].includes(url.protocol) || values.avatarUrl.trim().length > 2048) throw new Error()
+    } catch { errors.avatarUrl = 'Nhập liên kết ảnh http hoặc https hợp lệ (tối đa 2048 ký tự).' }
+  }
+  if (values.biography.length > 5000) errors.biography = 'Giới thiệu tối đa 5000 ký tự.'
+  if (values.practiceStartYear && (!Number.isInteger(Number(values.practiceStartYear)) || Number(values.practiceStartYear) < 1900 || Number(values.practiceStartYear) > new Date().getUTCFullYear())) errors.practiceStartYear = 'Năm bắt đầu hành nghề phải từ 1900 đến năm hiện tại.'
+  return errors
+}
+
+export type DoctorFormValues = DoctorPublicProfileValues & {
   username: string
   password: string
   email: string
@@ -13,7 +28,7 @@ export type DoctorFormValues = {
 }
 
 export function validateDoctor(values: DoctorFormValues, editing: boolean) {
-  const errors: Partial<Record<keyof DoctorFormValues, string>> = {}
+  const errors: Partial<Record<keyof DoctorFormValues, string>> = validateDoctorPublicProfile(values)
   if (!editing && !values.username.trim()) errors.username = 'Tên đăng nhập là bắt buộc.'
   if (!editing && values.password.length < 8) errors.password = 'Mật khẩu phải có ít nhất 8 ký tự.'
   if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = 'Email không hợp lệ.'

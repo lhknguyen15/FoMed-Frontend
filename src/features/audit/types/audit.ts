@@ -8,6 +8,13 @@ export type AuditLog = {
   oldValue?: string | null
   newValue?: string | null
   createdAt: string
+  fullName?: string | null
+  roles?: string[]
+  actorSnapshot?: boolean
+  source?: string | null
+  ipAddress?: string | null
+  requestId?: string | null
+  changedFields?: string[]
 }
 
 export type AuditLogPage = { items: AuditLog[]; total: number; page: number; pageSize: number }

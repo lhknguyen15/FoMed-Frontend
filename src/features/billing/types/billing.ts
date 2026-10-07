@@ -23,12 +23,31 @@ export type UpdateMedicalServiceInput = CreateMedicalServiceInput & {
   isActive: boolean
 }
 
-export type PaymentRequest = { amount: number; method: 0 | 1 | 2 | 3; note?: string }
+export type PaymentRequest = { amount: number; method: 0 | 1 | 2 | 3; note?: string; cashReceived?: number; idempotencyKey?: string }
 export type InvoiceCancelRequest = { reason?: string }
 export type InvoiceCandidate = { medicalRecordId: number; appointmentId: number; patientId: number; patientName: string; appointmentStartTime: string; consultationFee: number; serviceAndMedicineAmount: number; estimatedTotalAmount: number }
 
 export type InvoiceLine = { description?: string | null; quantity: number; unitPrice: number; amount: number }
-export type Payment = { id: number; amount: number; method: number; paidAt: string }
+export type Payment = {
+  id: number
+  amount: number
+  method: number
+  paidAt: string
+  cashReceived?: number | null
+  changeAmount?: number | null
+  receivedBy?: number | null
+  receivedByName?: string | null
+  idempotencyKey?: string | null
+  provider?: string | null
+  providerEnvironment?: string | null
+  providerTransactionId?: number | null
+}
+export type SePayStatus = 'Pending' | 'Paid' | 'Expired' | 'Superseded' | 'ReviewRequired' | 'InvoiceSettled' | 'InvoiceCancelled'
+export type SePayPaymentRequest = {
+  id: string; invoiceId: number; environment: 'Test' | 'Live'; code: string; amount: number
+  bankCode: string; accountNumber: string; accountName: string
+  createdAt: string; expiresAt: string; status: SePayStatus; qrUrl: string | null; remainingAmount: number
+}
 export type Invoice = {
   id: number
   invoiceNo: string

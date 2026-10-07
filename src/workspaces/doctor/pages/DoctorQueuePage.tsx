@@ -1,4 +1,5 @@
-import { AlertTriangle, CalendarDays, CheckCircle2, ClipboardList, History, PlayCircle, RefreshCw, Stethoscope, UserRound, XCircle } from 'lucide-react'
+import { notify } from '../../../shared/notifications/notify'
+import { AlertTriangle, CalendarDays, ClipboardList, History, PlayCircle, RefreshCw, Stethoscope, UserRound, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppShell from '../../../components/AppShell'
@@ -6,47 +7,51 @@ import { Badge, Button, Card, EmptyState, PageTitle } from '../../../components/
 import { appointmentApi } from '../../../features/appointments/api/appointment-api'
 import type { DoctorQueuePatient } from '../../../features/appointments/types/appointment'
 import { useApiQuery } from '../../../shared/hooks/useApiQuery'
-import { formatDateTime, toDateInput } from '../../../shared/utils/format-date'
+import { formatDateTime } from '../../../shared/utils/format-date'
 import { clinicalApi } from '../../../features/clinical/api/clinical-api'
-
-const today = toDateInput(new Date())
+import DoctorInProgressPanel from '../components/DoctorInProgressPanel'
+import { useClinicDate } from '../../../features/appointments/hooks/useClinicDate'
 
 export default function DoctorQueuePage() {
   const navigate = useNavigate()
+  const today = useClinicDate()
   const [date, setDate] = useState(today)
-  const [notice, setNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
   const queue = useApiQuery(`doctor-queue-${date}`, () => appointmentApi.doctorQueue(date))
+  const inProgress = useApiQuery('doctor-in-progress', () => appointmentApi.doctorInProgress())
   const rows = queue.data ?? []
+  const refreshVisits = () => { queue.refresh(); inProgress.refresh() }
 
   const startExam = async (item: DoctorQueuePatient) => {
     setBusyId(item.appointment.id)
-    setNotice(null)
     try {
       const record = await clinicalApi.createRecord(item.appointment.id)
-      setNotice({ type: 'success', text: `Đã bắt đầu lượt khám cho ${item.appointment.patientName}.` })
-      navigate(`/doctor/exam/${record.id}`, { state: { recentHistory: item.recentHistory, allergies: item.allergies, patientName: item.appointment.patientName } })
+      notify.success('Đã bắt đầu lượt khám.')
+      navigate(`/doctor/exam/${record.id}`, { state: { patientName: item.appointment.patientName } })
     } catch (error) {
-      setNotice({ type: 'error', text: error instanceof Error ? error.message : 'Không thể bắt đầu lượt khám.' })
+      notify.error(error, 'Không thể bắt đầu lượt khám.')
     } finally {
       setBusyId(null)
     }
   }
 
   const callNext = async () => {
-    setNotice(null)
     try {
       const appointment = await appointmentApi.callNext(date)
-      setNotice({ type: 'success', text: `Đã gọi ${appointment.patientName}${appointment.queueNumber ? ` · STT ${appointment.queueNumber}` : ''}.` })
+      notify.success(`Đã gọi bệnh nhân tiếp theo${appointment.queueNumber ? ` · Số thứ tự ${appointment.queueNumber}` : ''}.`)
       queue.refresh()
+      inProgress.refresh()
     } catch (error) {
-      setNotice({ type: 'error', text: error instanceof Error ? error.message : 'Không thể gọi bệnh nhân tiếp theo.' })
+      notify.error(error, 'Không thể gọi bệnh nhân tiếp theo.')
     }
   }
 
-  return <AppShell>
-    <PageTitle eyebrow="Không gian bác sĩ" title="Hàng chờ của tôi" description="Danh sách bệnh nhân đã check-in và sẵn sàng vào khám trong ngày." action={<Button variant="secondary" onClick={queue.refresh}><RefreshCw className="size-4" /> Làm mới</Button>} />
-    {notice && <p role={notice.type === 'error' ? 'alert' : 'status'} className={`mb-5 flex items-center gap-2 rounded-xl border p-3 text-sm font-semibold ${notice.type === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>{notice.type === 'error' ? <XCircle className="size-5" /> : <CheckCircle2 className="size-5" />}{notice.text}</p>}
+  const navigationCounts = date === today && !queue.loading && !queue.error && queue.data !== null
+    ? { 'doctor-waiting': rows.length } : undefined
+  return <AppShell navigationCounts={navigationCounts}>
+    <PageTitle eyebrow="Không gian bác sĩ" title="Hàng chờ & lượt đang khám" description="Tiếp tục bệnh án chưa hoàn tất hoặc bắt đầu khám cho bệnh nhân đã check-in." action={<Button variant="secondary" onClick={refreshVisits}><RefreshCw className="size-4" /> Làm mới</Button>} />
+    <DoctorInProgressPanel visits={inProgress.data ?? []} loading={inProgress.loading} error={inProgress.error} onRefresh={inProgress.refresh} onResume={visit => navigate(`/doctor/exam/${visit.medicalRecordId}`)} />
+    <h2 className="mb-3 font-display text-lg font-bold text-slate-900">Bệnh nhân đang chờ</h2>
     <Card className="mb-5 p-4"><div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><label className="max-w-xs flex-1"><span className="field-label"><CalendarDays className="size-4" /> Ngày khám</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="input-base" /></label><Button disabled={!rows.length} onClick={() => void callNext()}><PlayCircle className="size-4" /> Gọi bệnh nhân tiếp theo</Button></div></Card>
     {queue.loading ? <Card className="grid min-h-72 place-items-center"><span className="size-9 animate-spin rounded-full border-4 border-teal-100 border-t-teal-700" /></Card> : queue.error ? <Card className="p-8 text-center"><XCircle className="mx-auto size-10 text-rose-500" /><p className="mt-3 text-sm text-slate-500">{queue.error}</p><Button className="mt-5" onClick={queue.refresh}>Thử lại</Button></Card> : !rows.length ? <EmptyState icon={<Stethoscope className="size-6" />} title="Chưa có bệnh nhân trong hàng chờ" body="Lịch hẹn sẽ xuất hiện ở đây sau khi lễ tân check-in cho bệnh nhân." /> : <>
       <div className="mb-6 grid gap-4 md:grid-cols-3"><Card className="border-teal-200 bg-teal-50/60 p-5"><p className="text-xs font-bold uppercase tracking-wide text-teal-700">Đầu hàng</p><p className="mt-2 font-display text-2xl font-bold text-slate-900">STT {rows[0].appointment.queueNumber ?? '—'}</p><p className="mt-1 text-sm text-slate-600">{rows[0].appointment.patientName}</p></Card><Card className="p-5"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">Tiếp theo</p><p className="mt-2 font-display text-2xl font-bold text-slate-900">{rows[1] ? `STT ${rows[1].appointment.queueNumber ?? '—'}` : '—'}</p><p className="mt-1 text-sm text-slate-500">{rows[1]?.appointment.patientName || 'Chưa có'}</p></Card><Card className="p-5"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">Đang chờ</p><p className="mt-2 font-display text-2xl font-bold text-teal-700">{rows.length}</p><p className="mt-1 text-sm text-slate-500">Lượt đã check-in</p></Card></div>

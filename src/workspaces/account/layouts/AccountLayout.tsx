@@ -1,6 +1,7 @@
-import { KeyRound, UserRound } from 'lucide-react'
+import { KeyRound, Stethoscope, UserRound } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import AppShell from '../../../components/AppShell'
+import { useAuth } from '../../../features/auth/hooks/useAuth'
 
 const links = [
   { to: '/account/profile', label: 'Thông tin cá nhân', icon: UserRound },
@@ -8,6 +9,10 @@ const links = [
 ]
 
 export default function AccountLayout() {
+  const { user } = useAuth()
+  const accountLinks = user?.roles.some((role) => role.toLowerCase() === 'doctor')
+    ? [...links, { to: '/account/doctor-profile', label: 'Hồ sơ bác sĩ', icon: Stethoscope }]
+    : links
   return <AppShell>
     <header className="mb-5 sm:mb-7">
       <p className="text-xs font-bold uppercase tracking-[.16em] text-teal-700">Tài khoản của tôi</p>
@@ -16,7 +21,7 @@ export default function AccountLayout() {
     </header>
     <div className="min-w-0">
       <nav aria-label="Điều hướng cài đặt tài khoản" className="-mx-1 flex min-w-0 gap-2 overflow-x-auto border-b border-slate-200 px-1">
-        {links.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} className={({ isActive }) => `inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold transition sm:px-4 ${isActive ? 'border-teal-700 text-teal-800' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'}`}>
+        {accountLinks.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} className={({ isActive }) => `inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold transition sm:px-4 ${isActive ? 'border-teal-700 text-teal-800' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'}`}>
           <Icon className="size-[17px]" />{label}
         </NavLink>)}
       </nav>
