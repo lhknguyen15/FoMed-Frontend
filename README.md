@@ -1,5 +1,7 @@
 # FoMed-Frontend
 
+Xem [tổng quan dự án FoMed, link demo và hai repository](docs/FOMED-OVERVIEW.md).
+
 Giao diện của **FoMed — hệ thống quản lý phòng khám**, xây dựng bằng React và
 TypeScript, kết nối FoMed-API cho quy trình đặt lịch, khám bệnh, kho thuốc và thu ngân.
 Đây là repository frontend độc lập; backend được quản lý riêng.
@@ -194,6 +196,8 @@ trên Dashboard; tài liệu này có ghi nhận giai đoạn chuẩn bị trên
 
 ## Tài liệu
 
+- [FM-05: thông báo và thời gian chờ khi bị giới hạn đăng nhập/đăng ký](docs/fm-05-auth-rate-limit.md)
+- [Nghiệm thu quy trình FM-04 và các bước còn mở](docs/fm-04-workflow-acceptance.md)
 - [Cấu trúc frontend](docs/FRONTEND-STRUCTURE.md)
 - [Trang chủ và danh mục công khai](docs/PUBLIC-HOME.md)
 - [Thông báo Sonner](docs/NOTIFICATIONS.md)

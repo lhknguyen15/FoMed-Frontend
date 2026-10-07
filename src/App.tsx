@@ -15,6 +15,7 @@ import DoctorManagementPage from "./cms/doctors/pages/DoctorManagementPage";
 import SpecialtyManagementPage from "./cms/specialties/pages/SpecialtyManagementPage";
 import ScheduleManagementPage from "./cms/schedules/pages/ScheduleManagementPage";
 import ServiceManagementPage from "./cms/services/pages/ServiceManagementPage";
+import MedicineManagementPage from "./cms/medicines/pages/MedicineManagementPage";
 import UserManagementPage from "./cms/users/pages/UserManagementPage";
 import RoleManagementPage from "./cms/roles/pages/RoleManagementPage";
 import AdminReportPage from "./cms/reports/pages/AdminReportPage";
@@ -29,6 +30,8 @@ import ReceptionBookingPage from "./workspaces/reception/pages/ReceptionBookingP
 import ReceptionQueuePage from "./workspaces/reception/pages/ReceptionQueuePage";
 import ReceptionCashierPage from "./workspaces/reception/pages/ReceptionCashierPage";
 import ReceptionInvoiceListPage from "./workspaces/reception/pages/ReceptionInvoiceListPage";
+import ReceptionSchedulePage from "./workspaces/reception/pages/ReceptionSchedulePage";
+import ReceptionInvoicePrintPage from "./workspaces/reception/pages/ReceptionInvoicePrintPage";
 import DoctorQueuePage from "./workspaces/doctor/pages/DoctorQueuePage";
 import DoctorExamPage from "./workspaces/doctor/pages/DoctorExamPage";
 import DoctorServicesPage from "./workspaces/doctor/pages/DoctorServicesPage";
@@ -60,6 +63,7 @@ const receptionRoutes = [
   "/reception/patients",
   "/reception/booking",
   "/reception/queue",
+  "/reception/schedules",
   "/reception/cashier",
   "/reception/cashier/:invoiceId",
 ];
@@ -109,8 +113,9 @@ export default function App() {
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Receptionist", "Admin"]} />}>
+          <Route path="/reception/cashier/:invoiceId/print" element={<ReceptionInvoicePrintPage />} />
           {receptionRoutes.map((path) => (
-            <Route key={path} path={path} element={path === "/reception" ? <ReceptionDashboardPage /> : path === "/reception/patients" ? <ReceptionPatientsPage /> : path === "/reception/booking" ? <ReceptionBookingPage /> : path === "/reception/queue" ? <ReceptionQueuePage /> : path === "/reception/cashier" ? <ReceptionInvoiceListPage /> : path.startsWith("/reception/cashier/") ? <ReceptionCashierPage /> : <WorkspacePages />} />
+            <Route key={path} path={path} element={path === "/reception" ? <ReceptionDashboardPage /> : path === "/reception/patients" ? <ReceptionPatientsPage /> : path === "/reception/booking" ? <ReceptionBookingPage /> : path === "/reception/queue" ? <ReceptionQueuePage /> : path === "/reception/schedules" ? <ReceptionSchedulePage /> : path === "/reception/cashier" ? <ReceptionInvoiceListPage /> : path.startsWith("/reception/cashier/") ? <ReceptionCashierPage /> : <WorkspacePages />} />
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Doctor"]} />}>
@@ -136,6 +141,7 @@ export default function App() {
             <Route path="/admin/schedules" element={<ScheduleManagementPage />} />
             <Route path="/admin/time-off" element={<Navigate to="/admin/schedules?tab=leave" replace />} />
             <Route path="/admin/services" element={<ServiceManagementPage />} />
+            <Route path="/admin/medicines" element={<MedicineManagementPage />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/roles" element={<RoleManagementPage />} />
             <Route path="/admin/reports" element={<AdminReportPage />} />

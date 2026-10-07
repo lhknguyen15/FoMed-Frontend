@@ -53,6 +53,9 @@ export type SePayPaymentRequest = {
   createdAt: string; expiresAt: string; status: SePayStatus; qrUrl: string | null; remainingAmount: number
 }
 export type Invoice = {
+  patientName?: string | null
+  patientCode?: string | null
+  createdAt?: string | null
   id: number
   invoiceNo: string
   patientId: number

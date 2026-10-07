@@ -1,5 +1,7 @@
 import { displayError } from '../../../shared/api/user-messages'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { notify } from '../../../shared/notifications/notify'
+import { useRateLimitCooldown } from '../../../shared/hooks/useRateLimitCooldown'
 import { AlertCircle, ArrowLeft, ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../../assets/images/FoMed_Logo.png'
@@ -17,13 +19,17 @@ export default function LoginPage() {
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const pending = useRef(false)
+  const cooldown = useRateLimitCooldown()
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (pending.current || loading || cooldown.isBlocked()) return
     if (!username.trim() || !password) {
       setError('Vui lòng nhập đầy đủ tài khoản và mật khẩu.')
       return
     }
+    pending.current = true
     setLoading(true)
     setError('')
     try {
@@ -32,7 +38,9 @@ export default function LoginPage() {
       navigate(params.get('returnUrl') || getRoleHome(user), { replace: true })
     } catch (reason) {
       setError(displayError(reason, 'Đăng nhập không thành công.'))
+      if (cooldown.start(reason)) notify.error(reason, 'Vui lòng chờ một chút rồi thử lại.', 'auth-login-rate-limit')
     } finally {
+      pending.current = false
       setLoading(false)
     }
   }
@@ -50,7 +58,7 @@ export default function LoginPage() {
       <AuthField label="Tên đăng nhập hoặc email" icon={<Mail className="size-[18px]" />} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" placeholder="Nhập tên đăng nhập" disabled={loading} />
       <AuthField label="Mật khẩu" icon={<LockKeyhole className="size-[18px]" />} type={visible ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder="Nhập mật khẩu" disabled={loading} trailing={<button type="button" aria-label={visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} onClick={() => setVisible(!visible)} className="text-slate-400 hover:text-slate-700">{visible ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}</button>} />
       <div className="flex items-center justify-between text-sm"><label className="flex cursor-pointer items-center gap-2 text-slate-600"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="size-4 rounded accent-teal-700" />Ghi nhớ đăng nhập</label><Link to="/forgot-password" className="font-semibold text-teal-700 hover:text-teal-900">Quên mật khẩu?</Link></div>
-      <button disabled={loading} className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 text-sm font-bold text-white shadow-lg shadow-teal-800/15 transition hover:bg-teal-800 disabled:cursor-wait disabled:opacity-70">{loading ? <><span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Đang xác thực...</> : <>Đăng nhập <ArrowRight className="size-[18px] transition group-hover:translate-x-0.5" /></>}</button>
+      <button disabled={loading || cooldown.secondsLeft > 0} className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-teal-700 text-sm font-bold text-white shadow-lg shadow-teal-800/15 transition hover:bg-teal-800 disabled:cursor-wait disabled:opacity-70">{cooldown.secondsLeft > 0 ? `Vui lòng chờ ${cooldown.secondsLeft} giây` : loading ? <><span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Đang xác thực...</> : <>Đăng nhập <ArrowRight className="size-[18px] transition group-hover:translate-x-0.5" /></>}</button>
     </form>
     <p className="mt-8 text-center text-sm text-slate-500">Bạn chưa có tài khoản? <Link to="/register" className="font-bold text-teal-700 hover:text-teal-900">Đăng ký ngay</Link></p>
     <p className="mt-8 text-center text-[11px] leading-5 text-slate-400">Bằng việc tiếp tục, bạn đồng ý với điều khoản sử dụng và chính sách bảo mật của FoMed.</p>
