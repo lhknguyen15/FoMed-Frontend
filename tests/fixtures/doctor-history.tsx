@@ -18,7 +18,7 @@ const history: PatientHistorySummary[] = [106, 105, 104, 103, 102].map((id, inde
 const unavailable = async (): Promise<never> => { throw new Error('Visual fixture only') }
 const auth: AuthContextValue = { user: { id: 11, doctorId: 1, patientId: null, fullName: 'Bác sĩ DEMO', roles: ['Doctor'] }, isReady: true, isAuthenticated: true, login: unavailable, register: unavailable, forgotPassword: unavailable, logout() {}, updateFullName() {} }
 
-function Preview() {
+export function Preview() {
   const [mode, setMode] = useState<'ready' | 'empty' | 'error' | 'loading'>('ready')
   return <AppShell>
     <p className="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Dữ liệu minh họa, không có giá trị điều trị.</p>

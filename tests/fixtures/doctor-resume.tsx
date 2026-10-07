@@ -13,7 +13,7 @@ const visits: DoctorInProgress[] = [101, 102].map((id, index) => ({ medicalRecor
 const unavailable = async (): Promise<never> => { throw new Error('Visual fixture only') }
 const auth: AuthContextValue = { user: { id: 11, doctorId: 1, patientId: null, fullName: 'Bác sĩ DEMO', roles: ['Doctor'] }, isReady: true, isAuthenticated: true, login: unavailable, register: unavailable, forgotPassword: unavailable, logout() {}, updateFullName() {} }
 
-function Preview() {
+export function Preview() {
   const navigate = useNavigate()
   const location = useLocation()
   const [mode, setMode] = useState<'ready' | 'empty' | 'error' | 'loading'>('ready')
