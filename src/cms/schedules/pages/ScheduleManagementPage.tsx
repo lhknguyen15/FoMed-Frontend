@@ -1,6 +1,8 @@
+import { notify } from '../../../shared/notifications/notify'
+import { displayError } from '../../../shared/api/user-messages'
 import { Fragment, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CalendarDays, CalendarOff, CheckCircle2, ChevronDown, ChevronRight, PencilLine, Plus, Trash2 } from 'lucide-react'
+import { CalendarDays, CalendarOff, ChevronDown, ChevronRight, PencilLine, Plus, Trash2 } from 'lucide-react'
 import { Button, Card } from '../../../components/ui'
 import { doctorAdminApi } from '../../../features/doctors/api/doctor-api'
 import { scheduleAdminApi } from '../../../features/schedules/api/schedule-api'
@@ -28,7 +30,6 @@ export default function ScheduleManagementPage() {
   const [leaveForm, setLeaveForm] = useState<DoctorTimeOff | null | undefined>(undefined)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const schedules = useApiQuery('admin-doctor-schedules', scheduleAdminApi.schedules)
   const timeOff = useApiQuery('admin-time-off', () => scheduleAdminApi.timeOff())
   const doctors = useApiQuery('admin-schedule-doctors', doctorAdminApi.list)
@@ -50,13 +51,13 @@ export default function ScheduleManagementPage() {
     try {
       if (scheduleForm) {
         await scheduleAdminApi.updateSchedule(scheduleForm.id, { ...input, dayOfWeek: input.dayOfWeeks[0] })
-        setScheduleForm(undefined); setSuccess('Đã cập nhật khung giờ làm việc.')
+        setScheduleForm(undefined); notify.success('Đã cập nhật khung giờ làm việc.')
       } else {
         await scheduleAdminApi.createSchedules(input)
-        setScheduleForm(undefined); setSuccess(`Đã thêm lịch làm việc cho ${input.dayOfWeeks.length} ngày.`)
+        setScheduleForm(undefined); notify.success(`Đã thêm lịch làm việc cho ${input.dayOfWeeks.length} ngày.`)
       }
       schedules.refresh()
-    } catch (e) { setError(e instanceof Error ? e.message : 'Không thể lưu lịch làm việc.') } finally { setBusy(false) }
+    } catch (e) { setError(displayError(e, 'Không thể lưu lịch làm việc.')) } finally { setBusy(false) }
   }
   const saveLeave = async (values: TimeOffFormValues) => {
     setError('')
@@ -64,25 +65,24 @@ export default function ScheduleManagementPage() {
     try {
       if (leaveForm) await leaveMutation.update(leaveForm.id, input)
       else await leaveMutation.create(input)
-      setLeaveForm(undefined); setSuccess(leaveForm ? 'Đã cập nhật lịch nghỉ.' : 'Đã tạo lịch nghỉ.'); timeOff.refresh()
+      setLeaveForm(undefined); notify.success(leaveForm ? 'Đã cập nhật lịch nghỉ.' : 'Đã tạo lịch nghỉ.'); timeOff.refresh()
     } catch { /* lỗi hiển thị trong form */ }
   }
   const removeSchedule = async (item: AdminDoctorSchedule) => {
     if (!window.confirm(`Ngừng áp dụng lịch ${weekDays[item.dayOfWeek]} ${item.startTime.slice(0, 5)}–${item.endTime.slice(0, 5)} của ${item.doctorName}?`)) return
-    try { await scheduleAdminApi.deleteSchedule(item.id); setSuccess('Đã ngừng áp dụng lịch làm việc.'); schedules.refresh() } catch (e) { setError(e instanceof Error ? e.message : 'Không thể xóa lịch.') }
+    try { await scheduleAdminApi.deleteSchedule(item.id); notify.success('Đã ngừng áp dụng lịch làm việc.'); schedules.refresh() } catch (e) { notify.error(e, 'Không thể ngừng áp dụng lịch làm việc.') }
   }
   const removeLeave = async (item: DoctorTimeOff) => {
     if (!window.confirm(`Xóa lịch nghỉ ${formatDateTime(item.startAt)} – ${formatDateTime(item.endAt)}?`)) return
-    try { await leaveMutation.remove(item.id); setSuccess('Đã xóa lịch nghỉ.'); timeOff.refresh() } catch (e) { setError(e instanceof Error ? e.message : 'Không thể xóa lịch nghỉ.') }
+    try { await leaveMutation.remove(item.id); notify.success('Đã xóa lịch nghỉ.'); timeOff.refresh() } catch (e) { notify.error(e, 'Không thể xóa lịch nghỉ.') }
   }
 
   return <>
-    <CMSPageHeader title="Lịch làm việc & lịch nghỉ" description="Quản lý khung giờ nhận khám theo tuần và các khoảng thời gian bác sĩ hoặc phòng khám nghỉ." action={<Button onClick={() => { setError(''); setSuccess(''); if (tab === 'work') setScheduleForm(null); else setLeaveForm(null) }} disabled={!doctors.data}><Plus className="size-4" />{tab === 'work' ? 'Thêm khung giờ' : 'Tạo lịch nghỉ'}</Button>} />
-    {success && <div role="status" className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-700"><CheckCircle2 className="size-4" />{success}</div>}
-    {error && <div role="alert" className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div>}
+    <CMSPageHeader title="Lịch làm việc & lịch nghỉ" description="Quản lý khung giờ nhận khám theo tuần và các khoảng thời gian bác sĩ hoặc phòng khám nghỉ." action={<Button onClick={() => { setError(''); leaveMutation.clearError(); if (tab === 'work') setScheduleForm(null); else setLeaveForm(null) }} disabled={!doctors.data}><Plus className="size-4" />{tab === 'work' ? 'Thêm khung giờ' : 'Tạo lịch nghỉ'}</Button>} />
+
     <Card className="overflow-hidden">
       <div className="flex gap-2 border-b border-slate-100 p-4"><button onClick={() => { setTab('work'); setPage(1) }} className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold ${tab === 'work' ? 'bg-teal-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><CalendarDays className="size-4" />Lịch làm việc</button><button onClick={() => { setTab('leave'); setPage(1) }} className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold ${tab === 'leave' ? 'bg-teal-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}><CalendarOff className="size-4" />Lịch nghỉ</button></div>
-      {tab === 'work' ? schedules.loading ? <CMSLoading /> : schedules.error || !schedules.data ? <CMSError message={schedules.error} retry={schedules.refresh} /> : scheduleGroups.length === 0 ? <CMSEmpty label="khung giờ làm việc" /> : <><div className="overflow-x-auto"><table className="data-table"><thead><tr><th>Bác sĩ</th><th>Ngày làm việc</th><th>Khung giờ</th><th>Slot</th><th>Trạng thái</th><th>Chi tiết</th></tr></thead><tbody>{pagedSchedules.map(group => {
+      {tab === 'work' ? schedules.loading ? <CMSLoading /> : schedules.error || !schedules.data ? <CMSError message={schedules.error} retry={schedules.refresh} /> : scheduleGroups.length === 0 ? <CMSEmpty label="khung giờ làm việc" /> : <><div className="overflow-x-auto"><table className="data-table"><thead><tr><th>Bác sĩ</th><th>Ngày làm việc</th><th>Khung giờ</th><th>Thời lượng lượt khám</th><th>Trạng thái</th><th>Chi tiết</th></tr></thead><tbody>{pagedSchedules.map(group => {
         const expanded = expandedScheduleGroups.has(group.key)
         return <Fragment key={group.key}>
           <tr>
@@ -95,9 +95,9 @@ export default function ScheduleManagementPage() {
           </tr>
           {expanded && <tr><td colSpan={6} className="bg-slate-50/70 px-5 py-3"><ul className="divide-y divide-slate-200">{group.items.map(item => <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 py-2 first:pt-0 last:pb-0"><span className="text-sm font-medium text-slate-700">{weekDays[item.dayOfWeek] ?? '—'} <span className="font-normal text-slate-500">· {item.startTime.slice(0, 5)} – {item.endTime.slice(0, 5)}</span></span><span className="flex gap-1"><button onClick={() => { setError(''); setScheduleForm(item) }} aria-label={`Sửa lịch ${weekDays[item.dayOfWeek]}`} title="Sửa riêng ngày này" className="grid size-9 place-items-center rounded-lg text-slate-500 hover:bg-white"><PencilLine className="size-4" /></button><button onClick={() => void removeSchedule(item)} aria-label={`Xóa lịch ${weekDays[item.dayOfWeek]}`} title="Xóa riêng ngày này" className="grid size-9 place-items-center rounded-lg text-rose-600 hover:bg-white"><Trash2 className="size-4" /></button></span></li>)}</ul></td></tr>}
         </Fragment>
-      })}</tbody></table></div><CMSPagination page={page} pageSize={PAGE_SIZE} totalItems={scheduleGroups.length} onPageChange={setPage} label="nhóm lịch" /></> : timeOff.loading ? <CMSLoading /> : timeOff.error || !timeOff.data ? <CMSError message={timeOff.error} retry={timeOff.refresh} /> : timeOff.data.length === 0 ? <CMSEmpty label="lịch nghỉ" /> : <><div className="overflow-x-auto"><table className="data-table"><thead><tr><th>Bác sĩ</th><th>Bắt đầu</th><th>Kết thúc</th><th>Lý do</th><th>Thao tác</th></tr></thead><tbody>{pagedLeave.map(item => <tr key={item.id}><td className="font-semibold">{item.doctorId ? doctors.data?.find(d => d.doctorId === item.doctorId)?.fullName ?? `Bác sĩ #${item.doctorId}` : 'Toàn phòng khám'}</td><td>{formatDateTime(item.startAt)}</td><td>{formatDateTime(item.endAt)}</td><td>{item.reason || '—'}</td><td><span className="flex gap-1"><button onClick={() => { setError(''); setLeaveForm(item) }} aria-label="Sửa lịch nghỉ" className="grid size-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-100"><PencilLine className="size-4" /></button><button onClick={() => void removeLeave(item)} aria-label="Xóa lịch nghỉ" className="grid size-9 place-items-center rounded-lg text-rose-600 hover:bg-rose-50"><Trash2 className="size-4" /></button></span></td></tr>)}</tbody></table></div><CMSPagination page={page} pageSize={PAGE_SIZE} totalItems={timeOff.data.length} onPageChange={setPage} label="lịch nghỉ" /></>}
+      })}</tbody></table></div><CMSPagination page={page} pageSize={PAGE_SIZE} totalItems={scheduleGroups.length} onPageChange={setPage} label="nhóm lịch" /></> : timeOff.loading ? <CMSLoading /> : timeOff.error || !timeOff.data ? <CMSError message={timeOff.error} retry={timeOff.refresh} /> : timeOff.data.length === 0 ? <CMSEmpty label="lịch nghỉ" /> : <><div className="overflow-x-auto"><table className="data-table"><thead><tr><th>Bác sĩ</th><th>Bắt đầu</th><th>Kết thúc</th><th>Lý do</th><th>Thao tác</th></tr></thead><tbody>{pagedLeave.map(item => <tr key={item.id}><td className="font-semibold">{item.doctorId ? doctors.data?.find(d => d.doctorId === item.doctorId)?.fullName ?? `Bác sĩ #${item.doctorId}` : 'Toàn phòng khám'}</td><td>{formatDateTime(item.startAt)}</td><td>{formatDateTime(item.endAt)}</td><td>{item.reason || '—'}</td><td><span className="flex gap-1"><button onClick={() => { setError(''); leaveMutation.clearError(); setLeaveForm(item) }} aria-label="Sửa lịch nghỉ" className="grid size-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-100"><PencilLine className="size-4" /></button><button onClick={() => void removeLeave(item)} aria-label="Xóa lịch nghỉ" className="grid size-9 place-items-center rounded-lg text-rose-600 hover:bg-rose-50"><Trash2 className="size-4" /></button></span></td></tr>)}</tbody></table></div><CMSPagination page={page} pageSize={PAGE_SIZE} totalItems={timeOff.data.length} onPageChange={setPage} label="lịch nghỉ" /></>}
     </Card>
-    {scheduleForm !== undefined && doctors.data && <ScheduleForm schedule={scheduleForm} doctors={doctors.data} submitting={busy} error={error} onCancel={() => setScheduleForm(undefined)} onSubmit={saveSchedule} />}
-    {leaveForm !== undefined && doctors.data && <TimeOffForm timeOff={leaveForm} doctors={doctors.data} submitting={leaveMutation.submitting} apiError={leaveMutation.error} onCancel={() => setLeaveForm(undefined)} onSubmit={saveLeave} />}
+    {scheduleForm !== undefined && doctors.data && <ScheduleForm schedule={scheduleForm} doctors={doctors.data} submitting={busy} error={error} onCancel={() => { if (!busy) setScheduleForm(undefined) }} onSubmit={saveSchedule} />}
+    {leaveForm !== undefined && doctors.data && <TimeOffForm timeOff={leaveForm} doctors={doctors.data} submitting={leaveMutation.submitting} apiError={leaveMutation.error} onCancel={() => { if (!leaveMutation.submitting) setLeaveForm(undefined) }} onSubmit={saveLeave} />}
   </>
 }

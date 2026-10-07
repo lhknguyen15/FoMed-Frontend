@@ -8,9 +8,17 @@
 
 * { box-sizing: border-box; }
 html { background: #f6f8f8; }
-body { margin: 0; min-width: 320px; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+body { margin: 0; min-width: min(320px, 100%); min-height: 100vh; -webkit-font-smoothing: antialiased; }
 button, input, textarea { font: inherit; }
 button { cursor: pointer; }
+
+/* Keep header buttons and links identical despite the global font shorthand above. */
+.public-header .public-nav-item {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
 
 ::selection { background: #99f6e4; color: #134e4a; }
 ::-webkit-scrollbar { width: 9px; height: 9px; }

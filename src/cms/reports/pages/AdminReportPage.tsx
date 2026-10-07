@@ -1,3 +1,4 @@
+import { displayError } from '../../../shared/api/user-messages'
 import { useState } from 'react'
 import { BarChart3, CalendarRange, CheckCircle2, CircleDollarSign, Download, Users, WalletCards, XCircle } from 'lucide-react'
 import { Button, Card } from '../../../components/ui'
@@ -37,9 +38,10 @@ export default function AdminReportPage() {
   const report = useApiQuery(`report-${applied.from}-${applied.to}-${applied.doctorId}`, () => reportApi.summary({ from: applied.from, to: exclusiveEnd(applied.to), doctorId: applied.doctorId ? Number(applied.doctorId) : undefined }))
   const apply = () => {
     if (invalidRange || !from || !to) { setFormError('Vui lòng chọn khoảng ngày hợp lệ. Ngày bắt đầu không được sau ngày kết thúc.'); return }
-    setFormError(''); setDownloadError(''); setApplied({ from, to, doctorId })
+    setFormError(''); setDownloadError(''); setApplied({ from, to, doctorId }); report.refresh()
   }
   const exportReport = async () => {
+    if (!report.data || report.loading || report.error || downloading) return
     setDownloading(true); setDownloadError('')
     try {
       const result = await reportApi.exportCsv({ from: applied.from, to: exclusiveEnd(applied.to), doctorId: applied.doctorId ? Number(applied.doctorId) : undefined })
@@ -47,7 +49,7 @@ export default function AdminReportPage() {
       const anchor = document.createElement('a')
       anchor.href = url; anchor.download = result.fileName || `fomed-report-${applied.from}-${applied.to}.csv`; anchor.click()
       URL.revokeObjectURL(url)
-    } catch (reason) { setDownloadError(reason instanceof Error ? reason.message : 'Không thể xuất báo cáo.') }
+    } catch (reason) { setDownloadError(displayError(reason, 'Không thể xuất báo cáo.')) }
     finally { setDownloading(false) }
   }
   const data = report.data
@@ -64,7 +66,7 @@ export default function AdminReportPage() {
   ] : []
 
   return <>
-    <CMSPageHeader title="Báo cáo vận hành" description="Theo dõi lượt khám, trạng thái lịch hẹn và tình hình thu phí theo khoảng thời gian, bác sĩ." action={<Button variant="secondary" onClick={() => void exportReport()} disabled={!data || downloading}><Download className="size-4" />{downloading ? 'Đang xuất…' : 'Xuất CSV'}</Button>} />
+    <CMSPageHeader title="Báo cáo vận hành" description="Theo dõi lượt khám, trạng thái lịch hẹn và tình hình thu phí theo khoảng thời gian, bác sĩ." action={<Button variant="secondary" onClick={() => void exportReport()} disabled={!data || downloading || report.loading || !!report.error}><Download className="size-4" />{downloading ? 'Đang xuất…' : 'Xuất CSV'}</Button>} />
     <Card className="mb-6 p-4"><div className="grid items-end gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.25fr_auto]"><label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-500">Từ ngày</span><input type="date" value={from} onChange={e => setFrom(e.target.value)} className="input-base" /></label><label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-500">Đến ngày</span><input type="date" value={to} onChange={e => setTo(e.target.value)} className="input-base" /></label><label className="block"><span className="mb-1.5 block text-xs font-semibold text-slate-500">Bác sĩ</span><select value={doctorId} onChange={e => setDoctorId(e.target.value)} className="input-base"><option value="">Tất cả bác sĩ</option>{doctors.data?.filter(d => d.isActive).map(d => <option key={d.doctorId} value={d.doctorId}>{d.title ? `${d.title} ` : ''}{d.fullName}</option>)}</select></label><Button onClick={apply} disabled={invalidRange}><BarChart3 className="size-4" />Lọc báo cáo</Button></div>{(formError || downloadError) && <p role="alert" className="mt-3 text-sm font-semibold text-rose-600">{formError || downloadError}</p>}</Card>
     {report.loading ? <CMSLoading /> : report.error || !data ? <CMSError message={report.error} retry={report.refresh} /> : <>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(({ label, value, icon: Icon, tone }) => <Card key={label} className="p-5"><Icon className={`size-5 ${tone}`} /><p className="mt-3 text-sm text-slate-500">{label}</p><b className="mt-1 block text-xl text-slate-900">{value}</b></Card>)}</div>

@@ -1,6 +1,13 @@
 import { apiRequest } from '../../../shared/api/http-client'
 import type { CreateDoctorInput, CreateSpecialtyInput, Doctor, Specialty, UpdateDoctorInput, UpdateSpecialtyInput } from '../types/doctor'
 
+export const doctorProfileApi = {
+  me: () => apiRequest<Doctor>('/doctor/me'),
+  update: (request: Omit<UpdateDoctorInput, 'isActive'>) => apiRequest<Doctor>('/doctor/me', {
+    method: 'PUT', body: JSON.stringify(request),
+  }),
+}
+
 export const doctorAdminApi = {
   list: () => apiRequest<Doctor[]>('/admin/doctors'),
   specialties: async () => {

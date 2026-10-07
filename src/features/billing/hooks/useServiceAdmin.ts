@@ -1,3 +1,4 @@
+import { displayError } from '../../../shared/api/user-messages'
 import { useState } from 'react'
 import { serviceAdminApi } from '../api/billing-api'
 import type { CreateMedicalServiceInput, UpdateMedicalServiceInput } from '../types/billing'
@@ -12,7 +13,7 @@ export function useServiceAdmin() {
     try {
       return await operation()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Không thể lưu dịch vụ.')
+      setError(displayError(reason, 'Không thể lưu dịch vụ.'))
       throw reason
     } finally {
       setSubmitting(false)

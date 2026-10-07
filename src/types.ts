@@ -2,11 +2,14 @@ import type { LucideIcon } from 'lucide-react'
 
 export type Role = 'Bệnh nhân' | 'Lễ tân' | 'Bác sĩ' | 'Kỹ thuật viên' | 'Dược sĩ' | 'Quản trị'
 
+export type NavigationCountKey = 'patient-upcoming' | 'reception-waiting' | 'doctor-waiting'
+export type NavigationCounts = Partial<Record<NavigationCountKey, number>>
+
 export type NavItem = {
   label: string
   path: string
   icon: LucideIcon
-  badge?: string
+  countKey?: NavigationCountKey
 }
 
 export type AppointmentStatus = 'Đã check-in' | 'Chờ xác nhận' | 'Đang khám' | 'Hoàn tất' | 'Không đến'

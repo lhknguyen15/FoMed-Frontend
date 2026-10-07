@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { displayError } from '../../../shared/api/user-messages'
+import { useRef, useState } from 'react'
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { ApiError } from '../../../shared/api/api-error'
 import { AuthField } from '../../../features/auth/components/AuthField'
 import { useAuth } from '../../../features/auth/hooks/useAuth'
 
@@ -11,21 +11,24 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const pending = useRef(false)
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (pending.current || loading || message) return
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Vui lòng nhập một địa chỉ email hợp lệ.')
       return
     }
-    setLoading(true)
+    pending.current = true; setLoading(true)
     setError('')
     try {
-      setMessage(await forgotPassword(email.trim()))
+      await forgotPassword(email.trim())
+      setMessage('Nếu email đã được đăng ký, hướng dẫn khôi phục mật khẩu sẽ được gửi đến bạn. Vui lòng kiểm tra hộp thư và thư rác.')
     } catch (reason) {
-      setError(reason instanceof ApiError || reason instanceof Error ? reason.message : 'Không thể gửi yêu cầu.')
+      setError(displayError(reason, 'Không thể gửi yêu cầu.'))
     } finally {
-      setLoading(false)
+      pending.current = false; setLoading(false)
     }
   }
 

@@ -1,3 +1,4 @@
+import { displayError } from '../../../shared/api/user-messages'
 import { useState } from 'react'
 import { authApi } from '../api/auth-api'
 
@@ -11,7 +12,7 @@ export function useAdminUserMutations() {
     try {
       return await operation()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Không thể cập nhật người dùng.')
+      setError(displayError(reason, 'Không thể cập nhật người dùng.'))
       throw reason
     } finally {
       setSubmitting(false)

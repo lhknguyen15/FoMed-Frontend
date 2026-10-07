@@ -15,20 +15,20 @@ export const authApi = {
   }),
 
   forgotPassword: async (email: string) => {
-    const result = await apiRequestResult<null>('/auth/forgot-password', {
+    await apiRequestResult<null>('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
       skipAuth: true,
     })
-    return result.message
+    return 'Nếu email đã được đăng ký, hướng dẫn khôi phục mật khẩu sẽ được gửi đến bạn. Vui lòng kiểm tra hộp thư và thư rác.'
   },
 
   changePassword: async (request: { oldPassword: string; newPassword: string; confirmPassword: string }) => {
-    const result = await apiRequestResult<string | null>('/profile/change-password', {
+    await apiRequestResult<string | null>('/profile/change-password', {
       method: 'PUT',
       body: JSON.stringify(request),
     })
-    return result.message
+    return 'Đã đổi mật khẩu thành công.'
   },
 
   adminUsers: (filters: { search?: string; role?: string; isActive?: boolean; page?: number; pageSize?: number } = {}) => {

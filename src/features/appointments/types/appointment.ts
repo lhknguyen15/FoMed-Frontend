@@ -56,3 +56,9 @@ export type DoctorQueuePatient = {
   allergies?: string | null
   recentHistory: PatientHistorySummary[]
 }
+
+export type DoctorInProgress = {
+  appointment: Appointment
+  medicalRecordId: number
+  startedAt: string
+}

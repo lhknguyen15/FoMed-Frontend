@@ -1,5 +1,6 @@
 import type { ApiResponse } from './api-response'
 import { clearStoredSession, getStoredSession, saveStoredSession, type StoredSession } from './token-storage'
+import { getUserErrorMessage } from './user-messages'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 let refreshPromise: Promise<StoredSession> | null = null
@@ -11,21 +12,26 @@ export function refreshStoredSession(): Promise<StoredSession> {
     const current = getStoredSession()
     if (!current?.refreshToken) throw new Error('Phiên đăng nhập không tồn tại.')
 
-    const response = await fetch(`${API_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: current.refreshToken }),
-    })
-    const payload = await response.json() as ApiResponse<{
+    let response: Response
+    try {
+      response = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: current.refreshToken }),
+      })
+    } catch {
+      throw new Error(getUserErrorMessage(null, 0))
+    }
+    const payload = await response.json().catch(() => null) as ApiResponse<{
       accessToken: string
       refreshToken: string
       expiresIn: number
       user: StoredSession['user']
-    } | null>
+    } | null> | null
 
-    if (!response.ok || !payload.dataResponse) {
+    if (!response.ok || !payload?.dataResponse) {
       clearStoredSession()
-      throw new Error(payload.message || 'Phiên đăng nhập đã hết hạn.')
+      throw new Error(response.ok ? 'Không thể tiếp tục phiên đăng nhập. Vui lòng đăng nhập lại.' : getUserErrorMessage(payload, response.status))
     }
 
     const next: StoredSession = {

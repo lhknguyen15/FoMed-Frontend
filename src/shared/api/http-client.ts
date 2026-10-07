@@ -2,17 +2,12 @@ import { ApiError } from './api-error'
 import type { ApiResponse } from './api-response'
 import { refreshStoredSession } from './refresh-token'
 import { getStoredSession } from './token-storage'
+import { getUserErrorMessage } from './user-messages'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 type RequestOptions = RequestInit & { skipAuth?: boolean; retryAuth?: boolean }
 type ErrorPayload = { message?: string; title?: string; errors?: Record<string, string[]> }
-
-function getErrorMessage(payload: ErrorPayload | null) {
-  if (payload?.message) return payload.message
-  const validationMessage = payload?.errors && Object.values(payload.errors).flat()[0]
-  return validationMessage || payload?.title || 'Yêu cầu không thể thực hiện.'
-}
 
 export async function apiRequestResult<T>(path: string, options: RequestOptions = {}): Promise<ApiResponse<T>> {
   const { skipAuth = false, retryAuth = true, ...init } = options
@@ -25,7 +20,7 @@ export async function apiRequestResult<T>(path: string, options: RequestOptions 
   try {
     response = await fetch(`${API_URL}${path}`, { ...init, headers })
   } catch {
-    throw new ApiError('Không thể kết nối đến FoMed API. Vui lòng kiểm tra backend.', 0)
+    throw new ApiError('Không thể kết nối đến hệ thống. Vui lòng kiểm tra kết nối mạng và thử lại.', 0)
   }
 
   if (response.status === 401 && !skipAuth && retryAuth && session?.refreshToken) {
@@ -39,9 +34,9 @@ export async function apiRequestResult<T>(path: string, options: RequestOptions 
 
   const payload = await response.json().catch(() => null) as (ApiResponse<T> & ErrorPayload) | null
   if (!response.ok) {
-    throw new ApiError(getErrorMessage(payload), response.status, payload)
+    throw new ApiError(getUserErrorMessage(payload, response.status), response.status, payload)
   }
-  if (!payload) throw new ApiError('Phản hồi từ máy chủ không hợp lệ.', response.status)
+  if (!payload) throw new ApiError('Không thể tải thông tin lúc này. Vui lòng thử lại.', response.status)
   return payload
 }
 
@@ -67,7 +62,7 @@ export async function apiDownload(path: string, options: RequestOptions = {}): P
   try {
     response = await fetch(`${API_URL}${path}`, { ...init, headers })
   } catch {
-    throw new ApiError('Không thể kết nối đến FoMed API. Vui lòng kiểm tra backend.', 0)
+    throw new ApiError('Không thể kết nối đến hệ thống. Vui lòng kiểm tra kết nối mạng và thử lại.', 0)
   }
   if (response.status === 401 && !skipAuth && retryAuth && session?.refreshToken) {
     await refreshStoredSession()
@@ -75,9 +70,14 @@ export async function apiDownload(path: string, options: RequestOptions = {}): P
   }
   if (!response.ok) {
     const payload = await response.json().catch(() => null) as ErrorPayload | null
-    throw new ApiError(getErrorMessage(payload), response.status, payload)
+    throw new ApiError(getUserErrorMessage(payload, response.status), response.status, payload)
   }
   const disposition = response.headers.get('content-disposition') ?? ''
-  const match = disposition.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i)
-  return { blob: await response.blob(), fileName: match?.[1] ? decodeURIComponent(match[1]) : undefined }
+  // Prefer RFC 5987 UTF-8 names; ASP.NET also emits an ASCII fallback before filename*.
+  const encoded = disposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i)?.[1]
+  const plain = disposition.match(/filename\s*=\s*(?:"((?:\\.|[^"])*)"|([^;]+))/i)
+  let fileName = (plain?.[1] ?? plain?.[2])?.trim().replace(/\\(["\\])/g, '$1')
+  if (encoded) { try { fileName = decodeURIComponent(encoded.trim()) } catch { /* Retain safe fallback for malformed headers. */ } }
+  fileName = fileName?.split(/[/\\]/).pop()?.split('').filter(character => character.charCodeAt(0) >= 32 && character.charCodeAt(0) !== 127).join('')
+  return { blob: await response.blob(), fileName }
 }

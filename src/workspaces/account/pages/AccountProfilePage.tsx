@@ -1,5 +1,7 @@
+import { displayError } from '../../../shared/api/user-messages'
+import { notify } from '../../../shared/notifications/notify'
 import { useEffect, useState, type FormEvent } from 'react'
-import { AlertCircle, CheckCircle2, LoaderCircle, ShieldCheck, UserRound } from 'lucide-react'
+import { AlertCircle, LoaderCircle, ShieldCheck, UserRound } from 'lucide-react'
 import { Button, Card } from '../../../components/ui'
 import { authApi } from '../../../features/auth/api/auth-api'
 import type { UserProfile } from '../../../features/auth/types/auth'
@@ -13,7 +15,6 @@ export default function AccountProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     let active = true
@@ -23,7 +24,7 @@ export default function AccountProfilePage() {
       setFullName(data.fullName ?? '')
       setPhone(data.phone ?? '')
     }).catch((reason: unknown) => {
-      if (active) setError(reason instanceof Error ? reason.message : 'Không thể tải hồ sơ.')
+      if (active) setError(displayError(reason, 'Không thể tải hồ sơ.'))
     }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [])
@@ -32,16 +33,16 @@ export default function AccountProfilePage() {
     event.preventDefault()
     if (!fullName.trim()) { setError('Vui lòng nhập họ và tên.'); return }
     if (profile?.phone && !phone.trim()) { setError('Hệ thống hiện chưa hỗ trợ xóa số điện thoại. Hãy nhập số mới hoặc giữ nguyên số hiện tại.'); return }
-    setSaving(true); setError(''); setSuccess('')
+    setSaving(true); setError('')
     try {
       const updated = await authApi.updateProfile({ fullName: fullName.trim(), phone: phone.trim() || undefined })
       setProfile(updated)
       setFullName(updated.fullName)
       setPhone(updated.phone ?? '')
       updateFullName(updated.fullName)
-      setSuccess('Thông tin hồ sơ đã được cập nhật.')
+      notify.success('Thông tin hồ sơ đã được cập nhật.')
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Không thể cập nhật hồ sơ.')
+      setError(displayError(reason, 'Không thể cập nhật hồ sơ.'))
     } finally {
       setSaving(false)
     }
@@ -53,7 +54,6 @@ export default function AccountProfilePage() {
   const initials = fullName.trim().split(/\s+/).map((part) => part[0]).slice(-2).join('').toUpperCase()
   return <>
     {error && <div role="alert" className="mb-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"><AlertCircle className="mt-0.5 size-4 shrink-0" />{error}</div>}
-    {success && <div role="status" className="mb-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700"><CheckCircle2 className="mt-0.5 size-4 shrink-0" />{success}</div>}
     <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(220px,0.72fr)_minmax(0,1.7fr)] xl:gap-5">
       <Card className="p-5 sm:p-6">
         <div className="flex items-center gap-4 lg:flex-col lg:items-start">
@@ -63,7 +63,7 @@ export default function AccountProfilePage() {
         <div className="my-5 border-t border-slate-100" />
         <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700"><ShieldCheck className="size-4" />{profile.isActive ? 'Tài khoản đang hoạt động' : 'Tài khoản tạm khóa'}</div>
         <div className="mt-4"><p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Vai trò</p><div className="flex flex-wrap gap-2">{profile.roles.map((role) => <span key={role} className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">{role}</span>)}</div></div>
-        <div className="mt-5 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-3.5"><p className="text-xs font-semibold text-slate-600">Ảnh đại diện</p><p className="mt-1 text-xs leading-5 text-slate-500">Vị trí ảnh hồ sơ được bố trí sẵn; chức năng tải ảnh sẽ được bổ sung khi API hỗ trợ.</p></div>
+        <div className="mt-5 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-3.5"><p className="text-xs font-semibold text-slate-600">Ảnh đại diện</p><p className="mt-1 text-xs leading-5 text-slate-500">Chức năng thay ảnh đại diện sẽ sớm được bổ sung.</p></div>
       </Card>
       <Card className="overflow-hidden">
         <div className="border-b border-slate-100 p-5 sm:p-6"><h2 className="font-display text-lg font-bold text-slate-900 sm:text-xl">Thông tin cá nhân</h2><p className="mt-1 text-sm text-slate-500">Cập nhật thông tin nhận diện và liên hệ.</p></div>

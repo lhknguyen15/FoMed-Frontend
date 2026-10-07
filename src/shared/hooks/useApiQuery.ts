@@ -1,3 +1,4 @@
+import { displayError } from '../api/user-messages'
 import { useEffect, useRef, useState } from 'react'
 
 export function useApiQuery<T>(key: string, query: () => Promise<T>) {
@@ -14,7 +15,7 @@ export function useApiQuery<T>(key: string, query: () => Promise<T>) {
     setError('')
     queryRef.current()
       .then((value) => { if (active) setData(value) })
-      .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : 'Không thể tải dữ liệu.') })
+      .catch((reason: unknown) => { if (active) setError(displayError(reason, 'Không thể tải dữ liệu.')) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [key, revision])

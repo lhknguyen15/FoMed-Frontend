@@ -1,5 +1,5 @@
 import { apiRequest } from '../../../shared/api/http-client'
-import type { Appointment, AppointmentFilters, AppointmentStatusChangeRequest, AvailableSlot, BookAppointmentRequest, CancelAppointmentRequest, DoctorQueuePatient, RescheduleAppointmentRequest, StaffBookAppointmentRequest } from '../types/appointment'
+import type { Appointment, AppointmentFilters, AppointmentStatusChangeRequest, AvailableSlot, BookAppointmentRequest, CancelAppointmentRequest, DoctorInProgress, DoctorQueuePatient, RescheduleAppointmentRequest, StaffBookAppointmentRequest } from '../types/appointment'
 
 const query = (filters: AppointmentFilters = {}) => {
   const params = new URLSearchParams()
@@ -23,6 +23,7 @@ export const appointmentApi = {
   },
   waitingQueue: (date: string, doctorId?: number) => apiRequest<Appointment[]>(`/appointments/waiting-queue?date=${date}${doctorId ? `&doctorId=${doctorId}` : ''}`),
   doctorQueue: (date: string) => apiRequest<DoctorQueuePatient[]>(`/appointments/doctor-queue?date=${date}`),
+  doctorInProgress: () => apiRequest<DoctorInProgress[]>('/appointments/doctor-in-progress'),
   checkIn: (id: number, request: AppointmentStatusChangeRequest = {}) => apiRequest<Appointment>(`/appointments/${id}/check-in`, { method: 'PUT', body: JSON.stringify(request) }),
   confirm: (id: number, request: AppointmentStatusChangeRequest = {}) => apiRequest<Appointment>(`/appointments/${id}/confirm`, { method: 'PUT', body: JSON.stringify(request) }),
   noShow: (id: number, request: AppointmentStatusChangeRequest = {}) => apiRequest<Appointment>(`/appointments/${id}/no-show`, { method: 'PUT', body: JSON.stringify(request) }),

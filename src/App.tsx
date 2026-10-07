@@ -37,9 +37,17 @@ import TechnicianOrdersPage from "./workspaces/technician/pages/TechnicianOrders
 import TechnicianResultsPage from "./workspaces/technician/pages/TechnicianResultsPage";
 import PharmacyInventoryPage from "./workspaces/pharmacy/pages/PharmacyInventoryPage";
 import PharmacyDispensePage from "./workspaces/pharmacy/pages/PharmacyDispensePage";
+import PendingPrescriptionsPage from "./workspaces/pharmacy/pages/PendingPrescriptionsPage";
 import PharmacyReceiptPage from "./workspaces/pharmacy/pages/PharmacyReceiptPage";
 import AccountLayout from "./workspaces/account/layouts/AccountLayout";
 import AccountProfilePage from "./workspaces/account/pages/AccountProfilePage";
+import HomePage from "./workspaces/public/pages/HomePage";
+import SpecialtyListPage from "./workspaces/public/pages/SpecialtyListPage";
+import DoctorListPage from "./workspaces/public/pages/DoctorListPage";
+import DoctorDetailPage from "./workspaces/public/pages/DoctorDetailPage";
+import DoctorProfilePage from "./workspaces/doctor/pages/DoctorProfilePage";
+import ServiceListPage from "./workspaces/public/pages/ServiceListPage";
+import FeatureComingSoonPage from "./workspaces/public/pages/FeatureComingSoonPage";
 
 const patientRoutes = [
   "/booking",
@@ -71,7 +79,14 @@ const pharmacyRoutes = [
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/specialties" element={<SpecialtyListPage />} />
+      <Route path="/specialties/:specialtyId" element={<SpecialtyListPage />} />
+      <Route path="/doctors" element={<DoctorListPage />} />
+      <Route path="/doctors/:doctorId" element={<DoctorDetailPage />} />
+      <Route path="/services" element={<ServiceListPage />} />
+      <Route path="/online-consultation" element={<FeatureComingSoonPage feature="consultation" />} />
+      <Route path="/health-news" element={<FeatureComingSoonPage feature="news" />} />
       <Route element={<GuestRoute />}>
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
@@ -84,6 +99,9 @@ export default function App() {
         <Route element={<AccountLayout />}>
           <Route path="/account/profile" element={<AccountProfilePage />} />
           <Route path="/account/change-password" element={<ChangePasswordPage />} />
+          <Route element={<RoleRoute roles={["Doctor"]} />}>
+            <Route path="/account/doctor-profile" element={<DoctorProfilePage />} />
+          </Route>
         </Route>
         <Route element={<RoleRoute roles={["Patient"]} />}>
           {patientRoutes.map((path) => (
@@ -107,7 +125,7 @@ export default function App() {
         </Route>
         <Route element={<RoleRoute roles={["Pharmacist", "Admin"]} />}>
           {pharmacyRoutes.map((path) => (
-            <Route key={path} path={path} element={path === "/pharmacy/inventory" ? <PharmacyInventoryPage /> : path === "/pharmacy/receipt" ? <PharmacyReceiptPage /> : <PharmacyDispensePage />} />
+            <Route key={path} path={path} element={path === "/pharmacy/inventory" ? <PharmacyInventoryPage /> : path === "/pharmacy/receipt" ? <PharmacyReceiptPage /> : path === "/pharmacy/dispense" ? <PendingPrescriptionsPage /> : <PharmacyDispensePage />} />
           ))}
         </Route>
         <Route element={<RoleRoute roles={["Admin"]} />}>
@@ -125,7 +143,7 @@ export default function App() {
           </Route>
         </Route>
       </Route>
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

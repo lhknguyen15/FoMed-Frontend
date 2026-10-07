@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { displayError } from '../../../shared/api/user-messages'
+import { notify } from '../../../shared/notifications/notify'
+import { useMemo, useRef, useState } from 'react'
 import { AlertCircle, ArrowLeft, ArrowRight, CalendarDays, Eye, EyeOff, LockKeyhole, Mail, Phone, UserRound } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import logo from '../../../assets/images/FoMed_Logo.png'
-import { ApiError } from '../../../shared/api/api-error'
 import { AuthField } from '../../../features/auth/components/AuthField'
 import { useAuth } from '../../../features/auth/hooks/useAuth'
 
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   const [accepted, setAccepted] = useState(false)
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
+  const pending = useRef(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormState, string>>>({})
 
@@ -38,7 +40,8 @@ export default function RegisterPage() {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!validate() || !accepted) return
+    if (pending.current || loading || !validate() || !accepted) return
+    pending.current = true
     setLoading(true)
     setError('')
     try {
@@ -49,11 +52,12 @@ export default function RegisterPage() {
         dateOfBirth: form.dateOfBirth ? `${form.dateOfBirth}T00:00:00` : undefined,
         password: form.password,
       })
+      notify.success('Đã tạo tài khoản. Bạn có thể tiếp tục đặt lịch khám.')
       navigate('/booking', { replace: true })
     } catch (reason) {
-      setError(reason instanceof ApiError || reason instanceof Error ? reason.message : 'Không thể tạo tài khoản.')
+      setError(displayError(reason, 'Không thể tạo tài khoản.'))
     } finally {
-      setLoading(false)
+      pending.current = false; setLoading(false)
     }
   }
 
@@ -65,7 +69,7 @@ export default function RegisterPage() {
 
     {error && <div role="alert" className="mt-5 flex gap-3 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-700"><AlertCircle className="mt-0.5 size-[18px] shrink-0" />{error}</div>}
 
-    <form onSubmit={submit} className="mt-6 grid gap-x-4 gap-y-4 sm:grid-cols-2">
+    <form onSubmit={submit} className="mt-6"><fieldset disabled={loading} className="grid gap-x-4 gap-y-4 sm:grid-cols-2">
       <AuthField label="Họ và tên *" icon={<UserRound className="size-[18px]" />} value={form.fullName} onChange={(e) => update('fullName', e.target.value)} placeholder="Nguyễn Văn An" autoComplete="name" error={fieldErrors.fullName} disabled={loading} />
       <AuthField label="Số điện thoại *" icon={<Phone className="size-[18px]" />} value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="0901 234 567" autoComplete="tel" error={fieldErrors.phone} disabled={loading} />
       <AuthField label="Email" icon={<Mail className="size-[18px]" />} type="email" value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="ban@email.com" autoComplete="email" error={fieldErrors.email} disabled={loading} />
@@ -74,7 +78,7 @@ export default function RegisterPage() {
       <AuthField label="Xác nhận mật khẩu *" icon={<LockKeyhole className="size-[18px]" />} type={visible ? 'text' : 'password'} value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} placeholder="Nhập lại mật khẩu" autoComplete="new-password" error={fieldErrors.confirmPassword} disabled={loading} />
       <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-white/60 p-3 text-xs leading-5 text-slate-500 sm:col-span-2"><input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-teal-700" /><span>Tôi đồng ý với <button type="button" className="font-semibold text-teal-700">điều khoản sử dụng</button> và chính sách bảo mật dữ liệu y tế của FoMed.</span></label>
       <button disabled={!canSubmit || loading} className="group flex h-12 items-center justify-center gap-2 rounded-xl bg-teal-700 text-sm font-bold text-white shadow-lg shadow-teal-800/15 transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2">{loading ? <><span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Đang tạo tài khoản...</> : <>Tạo tài khoản <ArrowRight className="size-[18px]" /></>}</button>
-    </form>
+    </fieldset></form>
     <p className="mt-6 text-center text-sm text-slate-500">Đã có tài khoản? <Link to="/login" className="font-bold text-teal-700">Đăng nhập</Link></p>
   </div>
 }

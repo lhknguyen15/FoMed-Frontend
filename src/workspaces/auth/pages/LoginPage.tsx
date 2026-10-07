@@ -1,8 +1,8 @@
+import { displayError } from '../../../shared/api/user-messages'
 import { useState } from 'react'
-import { AlertCircle, ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
+import { AlertCircle, ArrowLeft, ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../../../assets/images/FoMed_Logo.png'
-import { ApiError } from '../../../shared/api/api-error'
 import { AuthField } from '../../../features/auth/components/AuthField'
 import { useAuth } from '../../../features/auth/hooks/useAuth'
 import { getRoleHome } from '../../../routes/role-home'
@@ -31,13 +31,14 @@ export default function LoginPage() {
       const params = new URLSearchParams(location.search)
       navigate(params.get('returnUrl') || getRoleHome(user), { replace: true })
     } catch (reason) {
-      setError(reason instanceof ApiError || reason instanceof Error ? reason.message : 'Đăng nhập không thành công.')
+      setError(displayError(reason, 'Đăng nhập không thành công.'))
     } finally {
       setLoading(false)
     }
   }
 
   return <div className="w-full max-w-[430px]">
+    <Link to="/" className="mb-7 inline-flex items-center gap-2 rounded-lg py-1 text-sm font-semibold text-slate-500 transition hover:text-teal-800"><ArrowLeft className="size-4" /> Quay lại trang chủ</Link>
     <div className="mb-9 flex items-center gap-3 lg:hidden"><span className="grid size-11 place-items-center rounded-2xl bg-white shadow-sm"><img src={logo} alt="FoMed" className="size-9 object-contain" /></span><span className="font-display text-2xl font-extrabold text-slate-900">Fo<span className="text-teal-700">Med</span></span></div>
     <p className="text-xs font-extrabold uppercase tracking-[.16em] text-teal-700">Chào mừng trở lại</p>
     <h2 className="mt-2 font-display text-4xl font-bold tracking-tight text-slate-900">Đăng nhập</h2>

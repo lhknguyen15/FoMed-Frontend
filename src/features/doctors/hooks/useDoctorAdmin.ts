@@ -1,3 +1,4 @@
+import { displayError } from '../../../shared/api/user-messages'
 import { useState } from 'react'
 import { doctorAdminApi } from '../api/doctor-api'
 import type { CreateDoctorInput, CreateSpecialtyInput, UpdateDoctorInput, UpdateSpecialtyInput } from '../types/doctor'
@@ -12,7 +13,7 @@ export function useDoctorAdmin() {
     try {
       return await operation()
     } catch (reason) {
-      const message = reason instanceof Error ? reason.message : 'Không thể lưu dữ liệu.'
+      const message = displayError(reason, 'Không thể lưu dữ liệu.')
       setError(message)
       throw reason
     } finally {

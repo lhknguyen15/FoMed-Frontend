@@ -10,6 +10,9 @@ export type Doctor = {
   room?: string | null
   consultationFee: number
   isActive: boolean
+  avatarUrl?: string | null
+  biography?: string | null
+  practiceStartYear?: number | null
 }
 
 export type Specialty = {
@@ -30,6 +33,9 @@ export type CreateDoctorInput = {
   phone?: string
   room?: string
   consultationFee: number
+  avatarUrl?: string | null
+  biography?: string | null
+  practiceStartYear?: number | null
 }
 
 export type UpdateDoctorInput = Omit<CreateDoctorInput, 'username' | 'password' | 'email'> & {

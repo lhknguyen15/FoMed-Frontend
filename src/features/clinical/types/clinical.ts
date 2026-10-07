@@ -34,7 +34,7 @@ export type PrescriptionLine = {
   instruction?: string | null
 }
 
-export type Prescription = { id: number; medicalRecordId: number; note?: string | null; items: PrescriptionLine[] }
+export type Prescription = { id: number; medicalRecordId: number; note?: string | null; items: PrescriptionLine[]; isDispensed: boolean }
 
 export type ServiceOrder = {
   id: number
@@ -57,7 +57,7 @@ export type SaveMedicalRecordRequest = {
   vitalSigns?: VitalSigns | null
   icd10Code?: string
   treatmentPlan?: string
-  followUpDate?: string
+  followUpDate?: string | null
 }
 
 export type PrescriptionLineRequest = {
@@ -75,4 +75,11 @@ export type CreatePrescriptionRequest = {
 
 export type OrderServiceRequest = { serviceId: number; quantity: number }
 export type ClinicalCatalogItem = { id: number; name: string; price: number }
+export type PrescribingMedicine = { id: number; name: string; unit?: string | null; price: number; availableQuantity: number }
+export type PrescribingContext = { medicalRecordId: number; patientName: string; allergies?: string | null; medicines: PrescribingMedicine[] }
+export type MedicineSearch = { items: PrescribingMedicine[]; page: number; pageSize: number; totalCount: number }
 export type SaveLabResultRequest = { resultSummary: string; conclusion?: string; referenceRange?: string }
+export type LabResultHistoryPage = { items: { order: ServiceOrder; patientName: string; patientCode: string }[]; page: number; pageSize: number; total: number }
+export type ClinicalAttachment = { id: number; medicalRecordId: number; orderId: number | null; fileName: string;
+  contentType: string; fileSize: number; uploadedAt: string; downloadable: boolean }
+export type ClinicalAttachmentPage = { items: ClinicalAttachment[]; page: number; pageSize: number; total: number }
