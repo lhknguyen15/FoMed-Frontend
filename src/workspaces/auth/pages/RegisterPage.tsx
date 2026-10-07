@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import logo from '../../../assets/images/FoMed_Logo.png'
 import { AuthField } from '../../../features/auth/components/AuthField'
 import { useAuth } from '../../../features/auth/hooks/useAuth'
+import { useRateLimitCooldown } from '../../../shared/hooks/useRateLimitCooldown'
 
 type FormState = { fullName: string; phone: string; email: string; dateOfBirth: string; password: string; confirmPassword: string }
 const initialForm: FormState = { fullName: '', phone: '', email: '', dateOfBirth: '', password: '', confirmPassword: '' }
@@ -18,6 +19,7 @@ export default function RegisterPage() {
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
   const pending = useRef(false)
+  const cooldown = useRateLimitCooldown()
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormState, string>>>({})
 
@@ -40,7 +42,7 @@ export default function RegisterPage() {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (pending.current || loading || !validate() || !accepted) return
+    if (pending.current || loading || cooldown.isBlocked() || !validate() || !accepted) return
     pending.current = true
     setLoading(true)
     setError('')
@@ -56,6 +58,7 @@ export default function RegisterPage() {
       navigate('/booking', { replace: true })
     } catch (reason) {
       setError(displayError(reason, 'Không thể tạo tài khoản.'))
+      if (cooldown.start(reason)) notify.error(reason, 'Vui lòng chờ một chút rồi thử lại.', 'auth-register-rate-limit')
     } finally {
       pending.current = false; setLoading(false)
     }
@@ -77,7 +80,7 @@ export default function RegisterPage() {
       <AuthField label="Mật khẩu *" icon={<LockKeyhole className="size-[18px]" />} type={visible ? 'text' : 'password'} value={form.password} onChange={(e) => update('password', e.target.value)} placeholder="Tối thiểu 8 ký tự" autoComplete="new-password" error={fieldErrors.password} disabled={loading} trailing={<button type="button" aria-label={visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} onClick={() => setVisible(!visible)} className="text-slate-400">{visible ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}</button>} />
       <AuthField label="Xác nhận mật khẩu *" icon={<LockKeyhole className="size-[18px]" />} type={visible ? 'text' : 'password'} value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} placeholder="Nhập lại mật khẩu" autoComplete="new-password" error={fieldErrors.confirmPassword} disabled={loading} />
       <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-white/60 p-3 text-xs leading-5 text-slate-500 sm:col-span-2"><input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-teal-700" /><span>Tôi đồng ý với <button type="button" className="font-semibold text-teal-700">điều khoản sử dụng</button> và chính sách bảo mật dữ liệu y tế của FoMed.</span></label>
-      <button disabled={!canSubmit || loading} className="group flex h-12 items-center justify-center gap-2 rounded-xl bg-teal-700 text-sm font-bold text-white shadow-lg shadow-teal-800/15 transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2">{loading ? <><span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Đang tạo tài khoản...</> : <>Tạo tài khoản <ArrowRight className="size-[18px]" /></>}</button>
+      <button disabled={!canSubmit || loading || cooldown.secondsLeft > 0} className="group flex h-12 items-center justify-center gap-2 rounded-xl bg-teal-700 text-sm font-bold text-white shadow-lg shadow-teal-800/15 transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2">{cooldown.secondsLeft > 0 ? `Vui lòng chờ ${cooldown.secondsLeft} giây` : loading ? <><span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Đang tạo tài khoản...</> : <>Tạo tài khoản <ArrowRight className="size-[18px]" /></>}</button>
     </fieldset></form>
     <p className="mt-6 text-center text-sm text-slate-500">Đã có tài khoản? <Link to="/login" className="font-bold text-teal-700">Đăng nhập</Link></p>
   </div>

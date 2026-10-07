@@ -1,6 +1,6 @@
 import { notify } from '../../../shared/notifications/notify'
 import { displayError } from '../../../shared/api/user-messages'
-import { Fragment, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CalendarDays, CalendarOff, ChevronDown, ChevronRight, PencilLine, Plus, Trash2 } from 'lucide-react'
 import { Button, Card } from '../../../components/ui'
@@ -29,6 +29,7 @@ export default function ScheduleManagementPage() {
   const [scheduleForm, setScheduleForm] = useState<AdminDoctorSchedule | null | undefined>(undefined)
   const [leaveForm, setLeaveForm] = useState<DoctorTimeOff | null | undefined>(undefined)
   const [busy, setBusy] = useState(false)
+  const pending = useRef(false)
   const [error, setError] = useState('')
   const schedules = useApiQuery('admin-doctor-schedules', scheduleAdminApi.schedules)
   const timeOff = useApiQuery('admin-time-off', () => scheduleAdminApi.timeOff())
@@ -47,17 +48,19 @@ export default function ScheduleManagementPage() {
   const pagedSchedules = scheduleGroups.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   const pagedLeave = timeOff.data?.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) ?? []
   const saveSchedule = async (input: { doctorId: number; dayOfWeeks: number[]; startTime: string; endTime: string; slotMinutes: number; isActive: boolean }) => {
+    if (pending.current) return
+    pending.current = true
     setBusy(true); setError('')
     try {
       if (scheduleForm) {
-        await scheduleAdminApi.updateSchedule(scheduleForm.id, { ...input, dayOfWeek: input.dayOfWeeks[0] })
+        await scheduleAdminApi.updateSchedule(scheduleForm.id, { ...input, dayOfWeek: input.dayOfWeeks[0], expectedVersion: scheduleForm.version })
         setScheduleForm(undefined); notify.success('Đã cập nhật khung giờ làm việc.')
       } else {
         await scheduleAdminApi.createSchedules(input)
         setScheduleForm(undefined); notify.success(`Đã thêm lịch làm việc cho ${input.dayOfWeeks.length} ngày.`)
       }
       schedules.refresh()
-    } catch (e) { setError(displayError(e, 'Không thể lưu lịch làm việc.')) } finally { setBusy(false) }
+    } catch (e) { setError(displayError(e, 'Không thể lưu lịch làm việc.')) } finally { pending.current = false; setBusy(false) }
   }
   const saveLeave = async (values: TimeOffFormValues) => {
     setError('')
@@ -69,8 +72,10 @@ export default function ScheduleManagementPage() {
     } catch { /* lỗi hiển thị trong form */ }
   }
   const removeSchedule = async (item: AdminDoctorSchedule) => {
+    if (pending.current) return
     if (!window.confirm(`Ngừng áp dụng lịch ${weekDays[item.dayOfWeek]} ${item.startTime.slice(0, 5)}–${item.endTime.slice(0, 5)} của ${item.doctorName}?`)) return
-    try { await scheduleAdminApi.deleteSchedule(item.id); notify.success('Đã ngừng áp dụng lịch làm việc.'); schedules.refresh() } catch (e) { notify.error(e, 'Không thể ngừng áp dụng lịch làm việc.') }
+    pending.current = true; setBusy(true)
+    try { await scheduleAdminApi.deleteSchedule(item.id, item.version); notify.success('Đã ngừng áp dụng lịch làm việc.'); schedules.refresh() } catch (e) { notify.error(e, 'Không thể ngừng áp dụng lịch làm việc.') } finally { pending.current = false; setBusy(false) }
   }
   const removeLeave = async (item: DoctorTimeOff) => {
     if (!window.confirm(`Xóa lịch nghỉ ${formatDateTime(item.startAt)} – ${formatDateTime(item.endAt)}?`)) return

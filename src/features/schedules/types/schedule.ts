@@ -7,6 +7,7 @@ export type DoctorTimeOff = {
 }
 
 export type AdminDoctorSchedule = {
+  version?: string
   id: number
   doctorId: number
   doctorName: string
@@ -16,3 +17,5 @@ export type AdminDoctorSchedule = {
   slotMinutes: number
   isActive: boolean
 }
+
+export type ScheduleDoctorChoice = { doctorId: number; fullName: string; title?: string | null; isActive: boolean }

@@ -3,6 +3,7 @@ import type { ApiResponse } from './api-response'
 import { refreshStoredSession } from './refresh-token'
 import { getStoredSession } from './token-storage'
 import { getUserErrorMessage } from './user-messages'
+import { rateLimitMessage, retryAfterSeconds } from './rate-limit'
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
@@ -34,7 +35,8 @@ export async function apiRequestResult<T>(path: string, options: RequestOptions 
 
   const payload = await response.json().catch(() => null) as (ApiResponse<T> & ErrorPayload) | null
   if (!response.ok) {
-    throw new ApiError(getUserErrorMessage(payload, response.status), response.status, payload)
+    const wait = response.status === 429 ? retryAfterSeconds(response.headers.get('Retry-After'), payload) : undefined
+    throw new ApiError(response.status === 429 ? rateLimitMessage(wait) : getUserErrorMessage(payload, response.status), response.status, payload, wait)
   }
   if (!payload) throw new ApiError('Không thể tải thông tin lúc này. Vui lòng thử lại.', response.status)
   return payload
@@ -70,7 +72,8 @@ export async function apiDownload(path: string, options: RequestOptions = {}): P
   }
   if (!response.ok) {
     const payload = await response.json().catch(() => null) as ErrorPayload | null
-    throw new ApiError(getUserErrorMessage(payload, response.status), response.status, payload)
+    const wait = response.status === 429 ? retryAfterSeconds(response.headers.get('Retry-After'), payload) : undefined
+    throw new ApiError(response.status === 429 ? rateLimitMessage(wait) : getUserErrorMessage(payload, response.status), response.status, payload, wait)
   }
   const disposition = response.headers.get('content-disposition') ?? ''
   // Prefer RFC 5987 UTF-8 names; ASP.NET also emits an ASCII fallback before filename*.
