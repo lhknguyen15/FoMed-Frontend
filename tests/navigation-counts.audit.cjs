@@ -13,10 +13,10 @@ async function compile(entry) {
     platform: 'node', format: 'cjs', jsx: 'automatic', define: { 'import.meta.env': '{}' }, loader: { '.png': 'dataurl' },
     external: ['react', 'react/jsx-runtime', 'react-router-dom', 'lucide-react'],
     plugins: [{ name: 'isolated-navigation', setup(build) {
-      build.onResolve({ filter: /(?:useAuth|useApiQuery|appointment-api|catalog-api|clinical-api)$/ }, args => ({ path: args.path, namespace: 'fixture' }))
+      build.onResolve({ filter: /(?:useAuth|useApiQuery|useLiveApiQuery|appointment-api|catalog-api|clinical-api)$/ }, args => ({ path: args.path, namespace: 'fixture' }))
       build.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ loader: 'js', contents:
         args.path.endsWith('useAuth') ? 'export function useAuth() {return {user:globalThis.__navUser, logout(){}}}'
-          : args.path.endsWith('useApiQuery') ? 'export function useApiQuery(key) {return globalThis.__navQuery(key)}'
+          : args.path.endsWith('useApiQuery') || args.path.endsWith('useLiveApiQuery') ? 'export function useApiQuery(key) {return globalThis.__navQuery(key)}; export const useLiveApiQuery=useApiQuery;'
             : 'const forbidden = new Proxy({}, {get(){return () => {throw Error("Unexpected API call")}}}); export const appointmentApi=forbidden, catalogApi=forbidden, clinicalApi=forbidden;' }))
     } }] })
   const filename = path.join(root, 'tests', 'navigation-counts.compiled.cjs')

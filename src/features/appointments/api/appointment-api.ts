@@ -14,14 +14,14 @@ export const appointmentApi = {
   book: (request: BookAppointmentRequest) => apiRequest<Appointment>('/appointments/book', { method: 'POST', body: JSON.stringify(request) }),
   staffBook: (request: StaffBookAppointmentRequest) => apiRequest<Appointment>('/appointments/staff-book', { method: 'POST', body: JSON.stringify(request) }),
   myAppointments: (filters: AppointmentFilters = {}) => apiRequest<Appointment[]>(`/appointments/my-appointments${query(filters)}`),
-  staffAppointments: (filters: AppointmentFilters & { doctorId?: number } = {}) => {
+  staffAppointments: (filters: AppointmentFilters & { doctorId?: number } = {}, signal?: AbortSignal) => {
     const params = new URLSearchParams()
     if (filters.date) params.set('date', filters.date)
     if (filters.status !== undefined && filters.status !== '') params.set('status', String(filters.status))
     if (filters.doctorId) params.set('doctorId', String(filters.doctorId))
-    return apiRequest<Appointment[]>(`/appointments/staff-appointments?${params.toString()}`)
+    return apiRequest<Appointment[]>(`/appointments/staff-appointments?${params.toString()}`, { signal })
   },
-  waitingQueue: (date: string, doctorId?: number) => apiRequest<Appointment[]>(`/appointments/waiting-queue?date=${date}${doctorId ? `&doctorId=${doctorId}` : ''}`),
+  waitingQueue: (date: string, doctorId?: number, signal?: AbortSignal) => apiRequest<Appointment[]>(`/appointments/waiting-queue?date=${date}${doctorId ? `&doctorId=${doctorId}` : ''}`, { signal }),
   doctorQueue: (date: string) => apiRequest<DoctorQueuePatient[]>(`/appointments/doctor-queue?date=${date}`),
   doctorInProgress: () => apiRequest<DoctorInProgress[]>('/appointments/doctor-in-progress'),
   checkIn: (id: number, request: AppointmentStatusChangeRequest = {}) => apiRequest<Appointment>(`/appointments/${id}/check-in`, { method: 'PUT', body: JSON.stringify(request) }),

@@ -1,6 +1,6 @@
 import { displayError } from '../../../shared/api/user-messages'
 import { notify } from '../../../shared/notifications/notify'
-import { CheckCircle2, FileText, Printer, ReceiptText, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, FileText, Printer, ReceiptText, XCircle } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import AppShell from '../../../components/AppShell'
@@ -14,9 +14,11 @@ import type { PaymentRequest, SePayPaymentRequest } from '../../../features/bill
 import { cashPaymentPreview, formatPaymentMoney } from '../../../features/billing/schemas/payment-schema'
 import { useApiQuery } from '../../../shared/hooks/useApiQuery'
 import ReceptionReasonModal from '../components/ReceptionReasonModal'
+import { invoiceDetailPath, invoiceListReturnTo } from '../../../features/billing/utils/invoice-navigation'
 
 export default function ReceptionCashierPage() {
   const location = useLocation()
+  const returnTo = invoiceListReturnTo(new URLSearchParams(location.search).get('returnTo'))
   const navigate = useNavigate()
   const { invoiceId } = useParams()
   const id = Number(invoiceId)
@@ -108,7 +110,7 @@ export default function ReceptionCashierPage() {
     finally { mutationPending.current = false; setSubmitting(false) }
   }
   return <AppShell>
-    <PageTitle eyebrow="Bàn tiếp đón · Thu ngân" title={data ? `Hóa đơn ${data.invoiceNo}` : 'Thu ngân'} description={invoicePaid ? 'Tra cứu khoản thu và in hóa đơn đã thanh toán.' : 'Thu tiền mặt, đối chiếu tiền thừa hoặc thanh toán chuyển khoản qua SePay.'} />
+    <PageTitle eyebrow="Bàn tiếp đón · Thu ngân" title={data ? `Hóa đơn ${data.invoiceNo}` : 'Thu ngân'} description={invoicePaid ? 'Tra cứu khoản thu và in hóa đơn đã thanh toán.' : 'Thu tiền mặt, đối chiếu tiền thừa hoặc thanh toán chuyển khoản qua SePay.'} action={<Button variant="secondary" disabled={submitting} onClick={() => navigate(returnTo)}><ArrowLeft className="size-4" />Về danh sách hóa đơn</Button>} />
     {reviewInvoiceId === id && <p role="alert" className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Giao dịch SePay đang cần đối soát. Màn hình tạm khóa thao tác thu thêm và hủy hóa đơn; liên hệ quản trị viên, không thu lại tiền.</p>}
     {success && <div ref={successRef} tabIndex={-1} className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
       <p role="status" className="flex items-center gap-2 font-semibold"><CheckCircle2 className="size-5 shrink-0" />{success}</p>
@@ -145,7 +147,7 @@ export default function ReceptionCashierPage() {
               onAmountChange={(value) => { setAmount(value); setError('') }} onMethodChange={(value) => { setMethod(value); setAmount(''); setError('') }} onNoteChange={setNote} onSubmit={() => void pay()} />}
           </div>
           <PaymentHistory payments={data.payments} />
-          <Card className="p-5"><div className="flex flex-wrap gap-2"><Button variant="secondary" disabled={submitting || invoice.loading || !!invoice.error || data.id !== id || !!sepay || reviewInvoiceId === id} onClick={() => navigate(`/reception/cashier/${id}/print`)}><Printer className="size-4" />In hóa đơn</Button><Button variant="secondary" disabled title="Có thể lưu thành PDF từ cửa sổ in; tải PDF trực tiếp chưa khả dụng."><FileText className="size-4" />Xuất PDF</Button>{!invoicePaid && <Button variant="danger" disabled={submitting || !active || data.paidAmount > 0} onClick={() => setCancelOpen(true)}>Hủy hóa đơn</Button>}</div><p className="mt-3 text-xs leading-5 text-slate-500">Lịch sử lấy từ giao dịch đã lưu: tiền khách đưa không làm tăng doanh thu. Giao dịch cũ có thể chưa ghi nhận tiền khách đưa hoặc người thu. Hoàn tiền chưa được hỗ trợ.</p></Card>
+          <Card className="p-5"><div className="flex flex-wrap gap-2"><Button variant="secondary" disabled={submitting || invoice.loading || !!invoice.error || data.id !== id || !!sepay || reviewInvoiceId === id} onClick={() => navigate(invoiceDetailPath(id, returnTo, true))}><Printer className="size-4" />In hóa đơn</Button><Button variant="secondary" disabled title="Có thể lưu thành PDF từ cửa sổ in; tải PDF trực tiếp chưa khả dụng."><FileText className="size-4" />Xuất PDF</Button>{!invoicePaid && <Button variant="danger" disabled={submitting || !active || data.paidAmount > 0} onClick={() => setCancelOpen(true)}>Hủy hóa đơn</Button>}</div><p className="mt-3 text-xs leading-5 text-slate-500">Lịch sử lấy từ giao dịch đã lưu: tiền khách đưa không làm tăng doanh thu. Giao dịch cũ có thể chưa ghi nhận tiền khách đưa hoặc người thu. Hoàn tiền chưa được hỗ trợ.</p></Card>
         </div>
       </div>}
     {cancelOpen && <ReceptionReasonModal title="Hủy hóa đơn" description="Chỉ hóa đơn chưa phát sinh thanh toán mới được hủy." submitLabel="Xác nhận hủy" danger error={error} submitting={submitting} onClose={() => { if (!mutationPending.current) setCancelOpen(false) }} onSubmit={cancel} />}

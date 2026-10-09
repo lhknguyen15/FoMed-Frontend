@@ -74,7 +74,7 @@ async function main() {
     build.onResolve({ filter: /^react$|react-router-dom$|useApiQuery$|billing-api$/ }, args => ({ path: args.path, namespace: 'fixture' }))
     build.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ contents:
       args.path === 'react' ? 'export const useEffect=()=>{};' :
-      args.path.endsWith('react-router-dom') ? `export const useParams=()=>({invoiceId:global.__printFixture.invoiceId});export const useNavigate=()=>path=>global.__printFixture.navigation.push(path)` :
+      args.path.endsWith('react-router-dom') ? `export const useParams=()=>({invoiceId:global.__printFixture.invoiceId});export const useLocation=()=>({search:''});export const useNavigate=()=>path=>global.__printFixture.navigation.push(path)` :
       args.path.endsWith('billing-api') ? `export const invoiceApi={getById:async id=>{global.__printFixture.apiCalls.push(id);return global.__printFixture.query.data?.invoice}}` :
       `export function useApiQuery(key,query){global.__printFixture.queryCallback=query;return {...global.__printFixture.query,refresh(){global.__printFixture.refreshed=true}}}`
     }))
@@ -85,7 +85,7 @@ async function main() {
   check(!printButton().props.disabled, 'Print enabled only for verified loaded invoice')
   printButton().props.onClick(); check(fixture.printed === 1, 'Print handler invokes browser dialog exactly once on click')
   tree().find(e => e.props.onClick && textOf(e) === ' Về thu ngân').props.onClick()
-  check(fixture.navigation.at(-1) === '/reception/cashier/101', 'Back action returns to same invoice, not fixed demo route')
+  check(fixture.navigation.at(-1).startsWith('/reception/cashier/101?returnTo='), 'Back action returns to same invoice with list return context, not fixed demo route')
   tree().find(e => e.props.onClick && textOf(e) === ' Tải lại').props.onClick(); check(fixture.refreshed, 'Refresh lets cashier retrieve updated saved payments')
   await fixture.queryCallback(); check(fixture.apiCalls.at(-1) === 101, 'Preview fetches only selected authorized invoice GET')
   for (const query of [{ ...fixture.query, loading: true }, { ...fixture.query, error: 'Không tải được hóa đơn.' }, { ...fixture.query, data: { ...fixture.query.data, invoice: { ...invoice, id: 999 } } }, { ...fixture.query, data: { ...fixture.query.data, invoice: { ...invoice, paidAmount: 999 } } }]) {
@@ -99,7 +99,7 @@ async function main() {
   const app = fs.readFileSync(path.join(root, 'src/App.tsx'), 'utf8')
   check(app.includes('path="/reception/cashier/:invoiceId/print"') && app.indexOf('path="/reception/cashier/:invoiceId/print"') > app.indexOf('roles={["Receptionist", "Admin"]}'), 'Print route resides in staff-only boundary')
   const cashier = fs.readFileSync(path.join(root, 'src/workspaces/reception/pages/ReceptionCashierPage.tsx'), 'utf8')
-  check(cashier.includes('navigate(`/reception/cashier/${id}/print`)') && !cashier.includes('window.print()'), 'Cashier navigates to preview instead of printing workspace')
+  check(cashier.includes('navigate(invoiceDetailPath(id, returnTo, true))') && !cashier.includes('window.print()'), 'Cashier navigates to preview with return context instead of printing workspace')
   const css = fs.readFileSync(path.join(root, 'src/features/billing/components/invoice-print.css'), 'utf8')
   check(css.includes('@page fomed-invoice') && css.includes('page: fomed-invoice') && css.includes('table-header-group') && css.includes('break-inside: avoid'), 'Named A4 page and repeated headers target invoice print only')
   check(css.includes('[data-sonner-toaster]') && css.includes('.invoice-print-toolbar') && css.includes('display: none !important') && css.includes('overflow-wrap: anywhere'), 'Print hides controls/toasts and permits long text wrapping')
