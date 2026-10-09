@@ -196,6 +196,7 @@ trên Dashboard; tài liệu này có ghi nhận giai đoạn chuẩn bị trên
 
 ## Tài liệu
 
+- [Quay lại hóa đơn và tự cập nhật trạng thái tại quầy](docs/reception-flow-follow-up.md)
 - [FM-05: thông báo và thời gian chờ khi bị giới hạn đăng nhập/đăng ký](docs/fm-05-auth-rate-limit.md)
 - [Nghiệm thu quy trình FM-04 và các bước còn mở](docs/fm-04-workflow-acceptance.md)
 - [Cấu trúc frontend](docs/FRONTEND-STRUCTURE.md)
