@@ -15,6 +15,46 @@ Bản công khai chỉ dùng dữ liệu giả. **Không nhập hồ sơ bệnh 
 tiền thật để thử demo.** Dữ liệu nghiệp vụ được lưu ở database phía API, không nằm
 trong bản build frontend.
 
+## Tài khoản trải nghiệm demo
+
+[Mở trang đăng nhập FoMed](https://fo-med-frontend.vercel.app/login).
+
+Các tài khoản dưới đây được chủ dự án chủ động công khai để trải nghiệm với dữ liệu
+giả. Mật khẩu chung là `Test@123`, chỉ dành cho bản demo, không dùng lại ở tài khoản
+cá nhân hoặc môi trường thật. Không cung cấp tài khoản Admin.
+
+| Vai trò | Tên đăng nhập | Mật khẩu |
+| --- | --- | --- |
+| Bệnh nhân | `patient01` | `Test@123` |
+| Lễ tân | `demo202610.lt01` | `Test@123` |
+| Bác sĩ | `demo202610.bs01` | `Test@123` |
+| Kỹ thuật viên | `demo202610.kt01` | `Test@123` |
+| Dược sĩ | `demo202610.ds01` | `Test@123` |
+
+Đã kiểm tra đăng nhập thành công và đúng vai trò trên API demo ngày **14/10/2026**.
+Đây là kiểm tra đăng nhập, không phải nghiệm thu toàn bộ quy trình hoặc thanh toán Live.
+Chỉ sửa README không tạo tài khoản hay thay đổi mật khẩu trong database.
+
+### Gợi ý thử quy trình
+
+1. Bệnh nhân đặt lịch với bác sĩ liên kết tài khoản `demo202610.bs01`; có thể
+   đăng nhập bác sĩ trước để xem tên hồ sơ và chọn đúng bác sĩ khi đặt lịch.
+2. Lễ tân xác nhận lịch và tiếp đón bệnh nhân vào hàng chờ.
+3. Bác sĩ bắt đầu khám, ghi bệnh án và thêm chỉ định nếu cần.
+4. Kỹ thuật viên lưu kết quả; bác sĩ xem kết quả, kê đơn nếu cần và hoàn tất lượt khám.
+5. Lễ tân lập hóa đơn và ghi nhận thu tiền mặt **mô phỏng**. SePay chỉ dùng **Test**;
+   không quét QR hoặc chuyển tiền bằng tài khoản ngân hàng thật.
+6. Dược sĩ cấp thuốc theo đơn khi đáp ứng điều kiện nghiệp vụ và tồn kho hợp lệ.
+
+Đăng xuất trước khi đổi tài khoản. Nếu muốn dùng nhiều vai trò đồng thời, sử dụng
+hồ sơ trình duyệt riêng; nhiều tab trong cùng hồ sơ có thể dùng chung phiên đăng nhập.
+
+**Lưu ý:** đây là tài khoản dùng chung có quyền thao tác trên dữ liệu demo.
+Không nhập thông tin bệnh nhân thật, không đổi mật khẩu, sửa quyền hoặc phá hủy
+dữ liệu của lượt thử khác. Dữ liệu có thể thay đổi do người khác cùng trải nghiệm;
+không có cam kết tự khôi phục sau mỗi lượt. API/database có thể cần thời gian khởi
+động; nếu đăng nhập gián đoạn, chờ rồi thử lại, không gửi yêu cầu liên tục.
+
 ## Chức năng
 
 ### Trang công khai
@@ -187,7 +227,8 @@ trên Dashboard; tài liệu này có ghi nhận giai đoạn chuẩn bị trên
 
 ## Lưu ý khi dùng demo
 
-- Đăng nhập bằng tài khoản của database API đang kết nối; không công khai mật khẩu.
+- Dùng năm tài khoản demo đã công khai ở trên hoặc tài khoản của database API đang
+  kết nối. Không công khai mật khẩu tài khoản thật, tài khoản Admin hoặc bí mật hạ tầng.
 - API/database demo có thể cần thời gian khởi động lại sau khi không hoạt động.
   Trang frontend tải được không đồng nghĩa database đã sẵn sàng.
 - Thêm dữ liệu vào Azure chỉ cần tải lại danh sách; không cần deploy lại frontend.
