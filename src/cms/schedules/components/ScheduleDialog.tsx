@@ -14,7 +14,7 @@ export default function ScheduleDialog({ title, busy, onClose, children }: { tit
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') { event.preventDefault(); if (!busyRef.current) closeRef.current() }
       if (event.key !== 'Tab' || !container.current) return
-      const items = Array.from(container.current.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]')).filter(item => !item.closest('fieldset:disabled'))
+      const items = Array.from(container.current.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')).filter(item => !item.closest('fieldset:disabled'))
       const first = items[0]; const last = items.at(-1)
       if (!first || !last) { event.preventDefault(); container.current.focus(); return }
       if (event.shiftKey && (document.activeElement === first || document.activeElement === container.current)) { event.preventDefault(); last.focus() }

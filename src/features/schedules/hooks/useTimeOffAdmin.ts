@@ -1,12 +1,15 @@
 import { displayError } from '../../../shared/api/user-messages'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { scheduleAdminApi, type SaveDoctorTimeOffInput } from '../api/schedule-api'
 
 export function useTimeOffAdmin() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const pending = useRef(false)
 
   const execute = async <T,>(operation: () => Promise<T>) => {
+    if (pending.current) throw new Error('Đang xử lý lịch nghỉ. Vui lòng chờ hoàn tất.')
+    pending.current = true
     setSubmitting(true)
     setError('')
     try {
@@ -15,6 +18,7 @@ export function useTimeOffAdmin() {
       setError(displayError(reason, 'Không thể lưu lịch nghỉ.'))
       throw reason
     } finally {
+      pending.current = false
       setSubmitting(false)
     }
   }
