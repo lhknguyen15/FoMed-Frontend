@@ -50,9 +50,13 @@ check('Catalogs are grouped in collapsed booking disclosures', () => {
   for (const label of ['Bác sĩ', 'Chuyên khoa', 'Dịch vụ']) assert.ok(html.includes('aria-label="' + label + '"'))
 })
 const source = fs.readFileSync(entry, 'utf8')
-check('Full-width header separates logo and one right-aligned group', () => {
-  assert.doesNotMatch(source, /max-w-7xl items-center justify-between/)
+check('Full-width header background contains a centered content-width navigation', () => {
+  assert.match(source, /className="public-header sticky top-0[^"\n]*bg-white\/95/)
+  assert.match(source, /className="mx-auto flex h-\[72px\] w-full max-w-7xl items-center gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8"/)
   assert.match(source, /className="ml-auto flex shrink-0 items-center/)
+})
+check('Mobile menu uses the same container padding as page content', () => {
+  assert.match(source, /className="mx-auto grid w-full max-w-7xl gap-1 px-4 sm:px-6 lg:px-8"/)
 })
 check('Header typography overrides shorthand only in header', () => {
   const css = fs.readFileSync(path.join(root, 'src/index.css'), 'utf8')
@@ -73,7 +77,7 @@ check('Browser icon uses existing FoMed asset', () => {
 })
 const ComingSoonPage = loadComponent(path.join(root, 'src/workspaces/public/pages/FeatureComingSoonPage.tsx'))
 const app = fs.readFileSync(path.join(root, 'src/App.tsx'), 'utf8')
-for (const [feature, route, label] of [['consultation', '/online-consultation', 'Tư vấn trực tuyến'], ['news', '/health-news', 'Tin tức y tế']]) {
+for (const [feature, route, label] of [['consultation', '/online-consultation', 'Tư vấn trực tuyến']]) {
   check(`Coming-soon route: ${route}`, () => {
     assert.ok(app.includes('path="' + route + '" element={<FeatureComingSoonPage feature="' + feature + '" />}'))
     const page = renderToStaticMarkup(React.createElement(MemoryRouter, { initialEntries: [route] }, React.createElement(ComingSoonPage, { feature })))
@@ -85,4 +89,8 @@ for (const [feature, route, label] of [['consultation', '/online-consultation', 
     assert.doesNotMatch(page, /<form/)
   })
 }
+check('Health news opens the blog, not the coming-soon placeholder', () => {
+  assert.match(app, /path="\/health-news" element=\{<HealthNewsPage \/>\}/)
+  assert.doesNotMatch(app, /FeatureComingSoonPage feature="news"/)
+})
 console.log(`${checks} navigation checks passed. Render/source checks only; interaction requires browser verification.`)

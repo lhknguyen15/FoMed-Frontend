@@ -47,7 +47,7 @@ export default function ServiceListPage() {
   }
   const submit = (event: FormEvent) => { event.preventDefault(); setFilter(search.trim()) }
 
-  return <div className="min-h-screen bg-[#eef5fa]">
+  return <div className="public-site min-h-screen">
     <PublicHeader />
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <Link to="/" className="inline-flex items-center gap-2 text-xs font-medium text-slate-500 hover:text-teal-700"><ArrowLeft className="size-3.5" /> Trang chủ</Link>

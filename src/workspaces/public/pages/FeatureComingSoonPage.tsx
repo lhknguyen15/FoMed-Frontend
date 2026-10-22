@@ -1,20 +1,15 @@
 import { useEffect, useRef } from 'react'
-import { ArrowLeft, ArrowRight, CalendarDays, Clock3, MessageCircle, Newspaper } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarDays, Clock3, MessageCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import PublicHeader from '../components/PublicHeader'
 import PublicFooter from '../components/PublicFooter'
 
-type Feature = 'consultation' | 'news'
+type Feature = 'consultation'
 const features = {
   consultation: {
     title: 'Tư vấn trực tuyến',
     description: 'FoMed đang chuẩn bị trải nghiệm tư vấn trực tuyến. Hiện bạn chưa thể gửi yêu cầu tư vấn hoặc trao đổi với bác sĩ tại đây.',
     icon: MessageCircle,
-  },
-  news: {
-    title: 'Tin tức y tế',
-    description: 'FoMed đang xây dựng chuyên mục tin tức y tế. Hiện chưa có bài viết được đăng trong chuyên mục này.',
-    icon: Newspaper,
   },
 }
 
@@ -28,7 +23,7 @@ export default function FeatureComingSoonPage({ feature }: { feature: Feature })
     headingRef.current?.focus({ preventScroll: true })
     return () => { document.title = previousTitle }
   }, [title])
-  return <div className="min-h-screen bg-[#f8faf9] text-slate-900">
+  return <div className="public-site min-h-screen text-slate-900">
     <PublicHeader />
     <main className="relative overflow-hidden border-b border-teal-100 px-4 py-14 sm:px-6 sm:py-20">
       <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 -z-0 size-[480px] -translate-x-1/2 rounded-full bg-teal-100/40 blur-3xl" />

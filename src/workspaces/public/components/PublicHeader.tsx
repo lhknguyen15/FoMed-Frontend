@@ -76,7 +76,7 @@ export default function PublicHeader() {
 
   return (
     <header ref={headerRef} onBlurCapture={(event) => { if (event.relatedTarget instanceof Node && !event.currentTarget.contains(event.relatedTarget)) closeAll() }} className="public-header sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-[0_4px_24px_-16px_rgba(15,118,110,0.25)] backdrop-blur-xl">
-      <div className="flex h-[72px] w-full items-center gap-2 px-4 sm:gap-4 sm:px-6">
+      <div className="mx-auto flex h-[72px] w-full max-w-7xl items-center gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8">
         <Link to="/" onClick={closeAll} aria-label="FoMed - trang chủ" className={'flex shrink-0 items-center gap-2 rounded-xl sm:gap-3' + focusStyle}>
           <img src={logo} alt="" width={44} height={44} className="size-9 object-contain sm:size-11" />
           <span className="block font-display text-xl font-extrabold leading-tight tracking-tight text-slate-950 sm:text-2xl">Fo<span className="text-teal-700">Med</span></span>
@@ -108,8 +108,8 @@ export default function PublicHeader() {
         </div>
       </div>
 
-      <nav id="public-mobile-menu" hidden={!open} className="max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-slate-100 bg-white px-4 pb-5 pt-3 sm:px-6 lg:hidden" aria-label="Menu di động">
-        <div className="mx-auto grid max-w-7xl gap-1">
+      <nav id="public-mobile-menu" hidden={!open} className="max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-slate-100 bg-white pb-5 pt-3 lg:hidden" aria-label="Menu di động">
+        <div className="mx-auto grid w-full max-w-7xl gap-1 px-4 sm:px-6 lg:px-8">
           <button ref={mobileBookingRef} type="button" aria-expanded={panel === 'booking'} aria-controls="public-mobile-booking-menu" onClick={() => togglePanel('booking')} className={'public-nav-item flex items-center justify-between rounded-xl px-4 py-3.5 ' + (bookingActive || panel === 'booking' ? 'bg-teal-50 text-teal-800' : 'text-slate-700 hover:bg-slate-50') + focusStyle}>
             Đặt khám theo <ChevronDown className={'size-4 transition-transform ' + (panel === 'booking' ? 'rotate-180' : '')} aria-hidden="true" />
           </button>
