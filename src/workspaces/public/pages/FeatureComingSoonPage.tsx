@@ -19,7 +19,6 @@ export default function FeatureComingSoonPage({ feature }: { feature: Feature })
   useEffect(() => {
     const previousTitle = document.title
     document.title = title + ' · FoMed'
-    window.scrollTo({ top: 0, behavior: 'auto' })
     headingRef.current?.focus({ preventScroll: true })
     return () => { document.title = previousTitle }
   }, [title])

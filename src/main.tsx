@@ -4,11 +4,13 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import AppProviders from './app/providers'
 import AppToaster from './shared/notifications/AppToaster'
+import RouteScrollManager from './routes/RouteScrollManager'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
+      <RouteScrollManager />
       <AppProviders>
         <App />
         <AppToaster />

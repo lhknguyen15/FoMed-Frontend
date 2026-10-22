@@ -58,3 +58,15 @@ Trình duyệt xác nhận màu nền xen kẽ đúng, chân trang/nút có ch�
 ### Điều chỉnh chân trang
 
 Thử nền xanh ngọc trầm `#123F3B` cho chân trang, là sắc độ tối của màu chính. Chữ trắng ngà `#F5F7F4`, liên kết xanh bạc hà `#DDEFE8`; giữ nguyên banner đặt khám và các phần phía trên. Hai cặp chữ/nền này cũng được kiểm tra tương phản tối thiểu 4,5:1 trong `public-theme.test.cjs`.
+
+### Phân tách thẻ bác sĩ khỏi nền khu vực
+
+Phần chân dung bác sĩ trên trang chủ dùng nền trung tính `#F6F8F7`, ngăn với thân thẻ trắng bằng viền mảnh. Thẻ có bóng nhẹ, khu vực bác sĩ giữ nền xanh bạc hà. CSS giới hạn trong `.fomed-home`, không đổi dữ liệu, ảnh đại diện hay bố cục thanh trượt.
+
+### Bản thử ảnh chuyên khoa
+
+Thẻ chuyên khoa trên trang chủ có ảnh ngang tỷ lệ 16:11, tên và liên kết trên nền trắng. Chín ảnh Pexels lưu trong dự án, tổng dưới 400 KiB; nguồn và tác giả trong `src/assets/images/specialties/ATTRIBUTION.md` và mục ghi nguồn có thể mở dưới thanh trượt. Tất cả được ghi rõ là minh họa, không phải nhân sự hoặc cơ sở thật của FoMed.
+
+Ảnh chọn theo tên chuyên khoa (hỗ trợ tên không dấu), không theo ID hoặc vị trí danh sách. Chuyên khoa chưa có ảnh dùng ảnh khám sức khỏe chung. Ảnh tải lười, có kích thước khai báo, văn bản thay thế và chuyển về biểu tượng khi lỗi. Giữ nguyên điều hướng, dữ liệu và thao tác thanh trượt; không thêm tự động trượt.
+
+Kiểm tra bổ sung: 5 kiểm thử ảnh chuyên khoa, 5 kiểm thử ảnh trang chủ, 7 kiểm thử bảng màu và 10 kiểm tra thanh trượt đạt. Build/lint đạt; còn cảnh báo gói JavaScript lớn đã có trước. Trình duyệt xác nhận ảnh tải được, nút trượt và ghi nguồn hoạt động, không tràn ngang ở 375px và desktop. Chưa commit/push bản thử ảnh chuyên khoa.

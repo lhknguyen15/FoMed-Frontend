@@ -11,6 +11,7 @@ import PublicHeader from '../components/PublicHeader'
 import PublicFooter from '../components/PublicFooter'
 import { DoctorPreviewCard, ServicePreviewCard, SpecialtyPreviewCard } from '../components/PublicCatalogCards'
 import PublicCatalogCarousel from '../components/PublicCatalogCarousel'
+import { specialtyPhotos } from '../components/specialty-photos'
 import './home-page.css'
 
 const appointmentUrl = '/login?returnUrl=%2Fbooking'
@@ -84,7 +85,8 @@ export default function HomePage() {
       <section id="specialties" className="home-section scroll-mt-24">
         <div className={container}>
           <SectionHeading eyebrow="CHỌN CHUYÊN KHOA" title="Chăm sóc đúng nhu cầu của bạn" description="Khám phá bác sĩ theo lĩnh vực bạn đang quan tâm." to="/specialties" linkLabel="Tất cả chuyên khoa" />
-          {sectionState(1, specialties.length, 'chuyên khoa') ?? <PublicCatalogCarousel label="chuyên khoa" variant="specialties">{specialties.map((specialty, index) => <SpecialtyPreviewCard key={specialty.specialtyId} specialty={specialty} index={index} />)}</PublicCatalogCarousel>}
+          {sectionState(1, specialties.length, 'chuyên khoa') ?? <PublicCatalogCarousel label="chuyên khoa" variant="specialties">{specialties.map((specialty) => <SpecialtyPreviewCard key={specialty.specialtyId} specialty={specialty} />)}</PublicCatalogCarousel>}
+          {!loading && !failedSections.includes(1) && specialties.length > 0 && <details className="home-specialty-credits"><summary>Ảnh minh họa · Nguồn: Pexels</summary><p>Ảnh minh họa hoạt động chăm sóc sức khỏe, không phải nhân sự hoặc cơ sở thực tế của FoMed.</p><ul>{specialtyPhotos.map(photo => <li key={photo.key}><a href={photo.source} target="_blank" rel="noopener noreferrer">{photo.author} · {photo.alt}<span className="sr-only"> (mở ảnh gốc trong thẻ mới)</span></a></li>)}</ul></details>}
         </div>
       </section>
 

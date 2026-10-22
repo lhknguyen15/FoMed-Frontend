@@ -43,7 +43,6 @@ export default function ServiceListPage() {
     if (next === 1) updated.delete('page')
     else updated.set('page', String(next))
     setParams(updated)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
   const submit = (event: FormEvent) => { event.preventDefault(); setFilter(search.trim()) }
 

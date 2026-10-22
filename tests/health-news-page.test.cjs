@@ -2,6 +2,7 @@ const test = require('node:test')
 const assert = require('node:assert/strict')
 const path = require('node:path')
 const Module = require('node:module')
+const fs = require('node:fs')
 const { JSDOM } = require('jsdom')
 const { buildSync } = require('esbuild')
 
@@ -50,6 +51,28 @@ test('Shows one latest article, nine other cards, without duplicating articles',
   assert.equal(count('.news-card'), 9)
   assert.ok(document.querySelector('.news-featured h3').textContent.includes(articles[0].title))
   assert.equal(document.querySelector('h1').textContent, 'Hiểu thêm.Chăm sóc tốt hơn.')
+})
+
+test('Text-led articles avoid repeated placeholder covers and keep source links', async () => {
+  await mount()
+  assert.equal(count('.news-cover'), 0)
+  assert.equal(count('.news-featured img,.news-card img'), 0)
+  for (const article of document.querySelectorAll('.news-featured,.news-card')) {
+    assert.equal(article.querySelectorAll('h3').length, 1)
+    assert.ok(article.querySelector('.news-excerpt').textContent)
+    assert.ok(article.querySelector('.news-text-link').href.startsWith('https://vnexpress.net/'))
+  }
+})
+
+test('News surfaces override the public base without affecting other pages', () => {
+  const css = fs.readFileSync(path.join(rootDirectory, 'src/workspaces/public/pages/health-news.css'), 'utf8')
+  assert.match(css, /\.public-site\.health-news-page\s*\{[^}]*--news-surface: #f6f8f7;[^}]*background: var\(--news-surface\)/)
+  for (const selector of ['news-card', 'news-featured', 'news-search', 'news-empty']) {
+    assert.match(css, new RegExp(`\\.${selector} \\{[^}]*background: white;`))
+  }
+  assert.match(css, /\.news-card\s*\{[^}]*box-shadow:/)
+  assert.match(css, /\.news-intro\s*\{[^}]*background: var\(--news-pale\)/)
+  assert.match(css, /prefers-reduced-motion: reduce/)
 })
 test('Load more and filters reset the visible slice correctly', async () => {
   await mount()
