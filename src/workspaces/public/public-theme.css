@@ -1,0 +1,30 @@
+/* Two brand colors for public pages only. White is a neutral reading surface. */
+.public-site {
+  --public-primary: #0f766e;
+  --public-secondary: #ddefe8;
+  --public-footer-surface: #123f3b;
+  --public-ink: #173c38;
+  --public-muted: #45665d;
+  --public-border: #bcd9cc;
+  --color-teal-50: #edf7f2;
+  --color-teal-100: var(--public-secondary);
+  --color-teal-200: #bfdfd0;
+  --color-teal-700: var(--public-primary);
+  color: var(--public-ink);
+  background: var(--public-secondary);
+}
+
+.public-site .public-header { border-color: var(--public-border); }
+.public-site .public-footer { background: var(--public-footer-surface); color: var(--public-secondary); }
+.public-site .public-footer :is(.text-slate-400, .text-slate-500) { color: #f5f7f4; }
+.public-site .public-footer .text-slate-300 { color: var(--public-secondary); }
+.public-site .public-footer .text-teal-400 { color: var(--public-secondary); }
+.public-site .public-footer a:hover { color: white; }
+.public-site .public-booking-cta { background: var(--public-secondary); border-color: var(--public-border); }
+.public-site .public-booking-cta h2 { color: var(--public-ink); }
+.public-site .public-booking-cta p { color: var(--public-muted); }
+.public-site .public-booking-cta > div > div > span { background: var(--public-primary); color: white; }
+.public-site .public-booking-cta a { background: var(--public-primary); color: white; }
+.public-site .public-booking-cta a:hover { background: #115e59; }
+
+/* Functional error/warning colors remain distinct from the brand palette. */

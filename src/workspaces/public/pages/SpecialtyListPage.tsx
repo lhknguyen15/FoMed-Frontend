@@ -49,7 +49,7 @@ export default function SpecialtyListPage() {
     {error ? <LoadError message={error} /> : loading ? <Loading /> : <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{specialties.map((specialty) => <Link key={specialty.specialtyId} to={`/doctors?specialtyId=${specialty.specialtyId}`} className="group flex min-h-24 items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-teal-300 hover:shadow-sm"><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-teal-50 text-teal-700"><HeartPulse className="size-5" /></span><span className="min-w-0 flex-1"><strong className="block text-sm font-bold text-slate-800 group-hover:text-teal-800">{specialty.name}</strong><span className="mt-1 block text-xs text-slate-500">{specialty.description || 'Xem bác sĩ trong chuyên khoa'}</span></span><ArrowRight className="size-4 shrink-0 text-slate-400 group-hover:text-teal-700" /></Link>)}</div>}
   </>
 
-  return <div className="min-h-screen bg-[#f8faf9]"><PublicHeader /><main className="mx-auto min-h-[60vh] max-w-7xl px-5 py-9 sm:px-8 sm:py-12">{content}</main><PublicFooter /></div>
+  return <div className="public-site min-h-screen"><PublicHeader /><main className="mx-auto min-h-[60vh] max-w-7xl px-5 py-9 sm:px-8 sm:py-12">{content}</main><PublicFooter /></div>
 }
 
 function DoctorRow({ doctor, index }: { doctor: PublicDoctor; index: number }) {

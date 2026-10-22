@@ -6,6 +6,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/news-feed",
+      "destination": "/api/health-news"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

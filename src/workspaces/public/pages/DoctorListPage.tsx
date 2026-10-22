@@ -58,7 +58,7 @@ export default function DoctorListPage() {
     setParams(next)
   }
 
-  return <div className="min-h-screen bg-[#f7f8fa]"><PublicHeader /><main className="mx-auto max-w-7xl px-4 py-6 sm:px-7 sm:py-9">
+  return <div className="public-site min-h-screen"><PublicHeader /><main className="mx-auto max-w-7xl px-4 py-6 sm:px-7 sm:py-9">
     <div className="mb-5"><Link to="/" className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-teal-700"><ArrowLeft className="size-3.5" /> Trang chủ</Link><p className="mt-4 text-xs font-bold text-teal-700">ĐẶT KHÁM BÁC SĨ</p><h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-slate-900 sm:text-[1.75rem]">{selectedSpecialty ? `Bác sĩ ${selectedSpecialty.name}` : 'Tìm bác sĩ'}</h1></div>
 
     <form onSubmit={submit} className="mb-5 flex gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm"><label className="flex min-w-0 flex-1 items-center gap-2.5 px-2"><Search className="size-4 shrink-0 text-teal-700" /><span className="sr-only">Tìm bác sĩ</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm theo tên bác sĩ..." className="min-w-0 flex-1 text-sm outline-none placeholder:text-slate-400" /></label><button className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white hover:bg-teal-800"><Search className="size-4" /> Tìm</button></form>

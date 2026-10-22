@@ -51,6 +51,8 @@ import DoctorDetailPage from "./workspaces/public/pages/DoctorDetailPage";
 import DoctorProfilePage from "./workspaces/doctor/pages/DoctorProfilePage";
 import ServiceListPage from "./workspaces/public/pages/ServiceListPage";
 import FeatureComingSoonPage from "./workspaces/public/pages/FeatureComingSoonPage";
+import HealthNewsPage from "./workspaces/public/pages/HealthNewsPage";
+import "./workspaces/public/public-theme.css";
 
 const patientRoutes = [
   "/booking",
@@ -90,7 +92,7 @@ export default function App() {
       <Route path="/doctors/:doctorId" element={<DoctorDetailPage />} />
       <Route path="/services" element={<ServiceListPage />} />
       <Route path="/online-consultation" element={<FeatureComingSoonPage feature="consultation" />} />
-      <Route path="/health-news" element={<FeatureComingSoonPage feature="news" />} />
+      <Route path="/health-news" element={<HealthNewsPage />} />
       <Route element={<GuestRoute />}>
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
