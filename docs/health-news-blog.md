@@ -6,6 +6,14 @@ Trang công khai `/health-news` thay trang «đang phát triển», dùng cùng 
 
 Dữ liệu là bản tin thực từ [RSS Sức khỏe VnExpress](https://vnexpress.net/rss/suc-khoe.rss), không phải bài viết FoMed tự biên soạn. Mỗi bài ghi tên nguồn, ngày xuất bản và mở bản gốc trong thẻ mới. Chỉ hiển thị tiêu đề và đoạn giới thiệu tối đa 200 ký tự; không tải toàn văn. Ảnh/HTML trong RSS không được tái sử dụng. Hình trang trí là biểu tượng sẵn có của dự án, không phải ảnh của bài báo.
 
+### Bản thử phân cấp nền và thẻ
+
+Vùng đọc dùng nền trung tính `#F6F8F7`; thẻ tin và bài mới nhất dùng nền trắng, viền mảnh và bóng nhẹ. Phần giới thiệu giữ xanh bạc hà, nút và liên kết giữ xanh ngọc. Selector `.public-site.health-news-page` bảo đảm nền dùng chung không ghi đè nền riêng của trang tin tức; không thay đổi các trang khác.
+
+Bỏ khung minh họa xanh lớn lặp lại ở mỗi bài. Khi chưa có ảnh được cấp quyền sử dụng, ưu tiên tiêu đề, đoạn tin, ngày xuất bản và nhãn chủ đề nhỏ; không gán ảnh minh họa chung thành ảnh thật của bài báo. Bài mới nhất có tiêu đề lớn hơn và đường nhấn xanh bên trái. Giữ nguyên dữ liệu, liên kết nguồn, tìm kiếm, lọc và sắp xếp.
+
+Kiểm tra bổ sung: 12 kiểm thử trang tin tức và 6 kiểm thử bảng màu đạt; build/lint đạt, còn cảnh báo gói JavaScript lớn đã có trước. Trình duyệt xác nhận nền trang `rgb(246, 248, 247)` khác nền thẻ trắng; tìm kiếm và lọc chủ đề hoạt động, không tràn ngang ở desktop và 375px. Chưa commit/push bản thử này.
+
 [Điều khoản RSS của VnExpress](https://vnexpress.net/rss) đề cập việc cung cấp miễn phí cho cá nhân và tổ chức phi lợi nhuận, yêu cầu ghi nguồn, và quyền yêu cầu ngừng phân phối. Bản này dành cho demo học tập. Cần rà soát/xin phép trước khi sử dụng trong hoạt động thương mại; việc truy cập được RSS không đồng nghĩa quyền sao chép toàn bộ bài hoặc ảnh. Không ngụ ý VnExpress bảo trợ FoMed.
 
 ## Kiến trúc

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowDown, ArrowLeft, ArrowUpRight, Baby, BookOpen, CalendarDays, HeartPulse, Leaf, Newspaper, RefreshCw, Search, ShieldCheck, Sprout, X } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUpRight, BookOpen, CalendarDays, HeartPulse, Newspaper, RefreshCw, Search, ShieldCheck, X } from 'lucide-react'
 import { getHealthNews } from '../../../features/news/api/news-api'
 import { newsTopics } from '../../../features/news/types/news'
 import type { NewsArticle, NewsFeed, NewsTopic } from '../../../features/news/types/news'
@@ -28,7 +28,6 @@ export default function HealthNewsPage() {
   useEffect(() => {
     const title = document.title
     document.title = 'Tin tức y tế · FoMed'
-    window.scrollTo({ top: 0, behavior: 'auto' })
     heading.current?.focus({ preventScroll: true })
     return () => { document.title = title }
   }, [])
@@ -86,8 +85,8 @@ export default function HealthNewsPage() {
         {error && !feed && <div role="alert" className="news-empty"><Newspaper aria-hidden="true" className="size-10" /><h3>Chưa tải được bản tin</h3><p>Nguồn tin có thể đang tạm gián đoạn. Bạn có thể thử lại hoặc đọc trực tiếp tại VnExpress.</p><div className="news-empty-actions"><button type="button" className="news-button" onClick={() => setRetry(value => value + 1)}><RefreshCw aria-hidden="true" className="size-4" /> Thử lại</button><a href="https://vnexpress.net/suc-khoe" target="_blank" rel="noopener noreferrer" className="news-text-link">Đọc tại VnExpress <ArrowUpRight aria-hidden="true" className="size-4" /></a></div></div>}
         {loading && !feed && <div role="status" aria-label="Đang tải tin tức" className="news-grid">{[0, 1, 2].map(item => <div key={item} aria-hidden="true" className="news-skeleton"><div /><span /><span /></div>)}</div>}
         {feed && !filtered.length && <div className="news-empty"><Search aria-hidden="true" className="size-10" /><h3>Chưa tìm thấy bài viết phù hợp</h3><p>Thử một từ khóa ngắn hơn hoặc chọn chủ đề khác.</p><button className="news-button" type="button" onClick={clearFilters}>Xem tất cả bài viết</button></div>}
-        {featured && <article className="news-featured"><NewsCover category={featured.category} featured /><div className="news-featured-content"><p className="news-eyebrow">BÀI MỚI NHẤT</p><NewsMeta article={featured} /><h3><ArticleLink article={featured}>{featured.title}</ArticleLink></h3><p className="news-excerpt">{featured.excerpt}</p><ArticleLink article={featured} className="news-text-link">Đọc bài tại VnExpress <ArrowUpRight aria-hidden="true" className="size-4" /></ArticleLink></div></article>}
-        {articles.length > 0 && <div className="news-grid">{articles.slice(0, visibleCount).map(article => <article key={article.id} className="news-card"><NewsCover category={article.category} /><div className="news-card-content"><NewsMeta article={article} /><h3><ArticleLink article={article}>{article.title}</ArticleLink></h3><p className="news-excerpt">{article.excerpt}</p><ArticleLink article={article} className="news-text-link">Đọc tại VnExpress <ArrowUpRight aria-hidden="true" className="size-4" /></ArticleLink></div></article>)}</div>}
+        {featured && <article className="news-featured"><div className="news-featured-content"><p className="news-eyebrow"><Newspaper aria-hidden="true" className="size-4" /> BÀI MỚI NHẤT</p><NewsMeta article={featured} /><h3><ArticleLink article={featured}>{featured.title}</ArticleLink></h3><p className="news-excerpt">{featured.excerpt}</p><ArticleLink article={featured} className="news-text-link">Đọc bài tại VnExpress <ArrowUpRight aria-hidden="true" className="size-4" /></ArticleLink></div></article>}
+        {articles.length > 0 && <div className="news-grid">{articles.slice(0, visibleCount).map(article => <article key={article.id} className="news-card"><div className="news-card-content"><NewsMeta article={article} /><h3><ArticleLink article={article}>{article.title}</ArticleLink></h3><p className="news-excerpt">{article.excerpt}</p><ArticleLink article={article} className="news-text-link">Đọc tại VnExpress <ArrowUpRight aria-hidden="true" className="size-4" /></ArticleLink></div></article>)}</div>}
         {articles.length > visibleCount && <div className="news-load-more"><p>Đang hiển thị {Math.min(visibleCount, articles.length) + (featured ? 1 : 0)} / {filtered.length} bài viết</p><button type="button" className="news-button" onClick={() => setVisibleCount(value => value + pageSize)}>Xem thêm bài viết <ArrowDown aria-hidden="true" className="size-4" /></button></div>}
         <div className="news-editorial-note"><ShieldCheck aria-hidden="true" className="size-5 shrink-0" /><p>FoMed chỉ giới thiệu tiêu đề và đoạn tin ngắn; nội dung đầy đủ thuộc về đơn vị xuất bản. Các chủ đề được FoMed nhóm để tiện tìm đọc. Liên kết bài viết mở tại nguồn trong thẻ mới.</p></div>
       </section>
@@ -103,9 +102,4 @@ function ArticleLink({ article, children, className }: { article: NewsArticle; c
 
 function NewsMeta({ article }: { article: NewsArticle }) {
   return <div className="news-meta"><span>{topicLabel(article.category)}</span><span><CalendarDays aria-hidden="true" className="size-3.5" /><time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time></span></div>
-}
-
-function NewsCover({ category, featured = false }: { category: NewsTopic; featured?: boolean }) {
-  const Icon = category === 'nutrition' ? Sprout : category === 'family' ? Baby : category === 'wellness' ? Leaf : HeartPulse
-  return <div className={'news-cover news-cover--' + category + (featured ? ' news-cover--featured' : '')} aria-hidden="true"><span className="news-cover-ring" /><span className="news-cover-icon"><Icon strokeWidth={1.2} /></span><span className="news-cover-label">FOMED / GÓC ĐỌC SỨC KHỎE</span><span className="news-cover-topic">{topicLabel(category)}</span></div>
 }

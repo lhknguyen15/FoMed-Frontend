@@ -15,7 +15,7 @@ export function Preview() {
     <button type="button" onClick={() => setSingle(!single)} className="mt-4 rounded-xl border border-teal-300 bg-white px-4 py-2 text-teal-800">{single ? 'Hiển thị nhiều lựa chọn' : 'Hiển thị một lựa chọn'}</button>
     <section id="specialties" className="mt-8 rounded-2xl bg-[#edf8f4] py-5">
       <h2 className="px-6 text-2xl font-bold text-slate-900">Chăm sóc đúng nhu cầu của bạn</h2>
-      <PublicCatalogCarousel label="chuyên khoa" variant="specialties">{specialties.map((specialty, index) => <SpecialtyPreviewCard key={specialty.specialtyId} specialty={specialty} index={index} />)}</PublicCatalogCarousel>
+      <PublicCatalogCarousel label="chuyên khoa" variant="specialties">{specialties.map((specialty) => <SpecialtyPreviewCard key={specialty.specialtyId} specialty={specialty} />)}</PublicCatalogCarousel>
     </section>
     <section id="doctors" className="mt-8">
       <h2 className="text-2xl font-bold text-slate-900">Tìm người đồng hành cùng sức khỏe</h2>

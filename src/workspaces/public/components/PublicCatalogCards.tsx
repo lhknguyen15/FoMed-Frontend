@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import { ArrowRight, Baby, Ear, FlaskConical, HeartPulse, ScanLine, Sparkles, Stethoscope } from 'lucide-react'
 import type { CatalogService, CatalogSpecialty, PublicDoctor } from '../../../features/catalogs/types/catalog'
 import DoctorAvatar from '../../../features/doctors/components/DoctorAvatar'
+import { getSpecialtyPhoto } from './specialty-photos'
 
 const formatCatalogPrice = (price: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(price)
 
@@ -14,11 +16,12 @@ function specialtyIcon(name: string) {
   return Stethoscope
 }
 
-export function SpecialtyPreviewCard({ specialty, index }: { specialty: CatalogSpecialty; index: number }) {
+export function SpecialtyPreviewCard({ specialty }: { specialty: CatalogSpecialty }) {
   const Icon = specialtyIcon(specialty.name)
-  const tone = ['bg-sky-100 text-sky-700', 'bg-rose-100 text-rose-700', 'bg-violet-100 text-violet-700', 'bg-amber-100 text-amber-700', 'bg-teal-100 text-teal-700'][index % 5]
-  return <Link to={`/doctors?specialtyId=${specialty.specialtyId}`} className="catalog-specialty-card group flex h-full flex-col items-start rounded-2xl border border-teal-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:border-teal-300 hover:shadow-md motion-reduce:transform-none sm:p-5">
-    <span className={`grid size-14 place-items-center rounded-2xl ${tone}`}><Icon className="size-7" /></span>
+  const photo = getSpecialtyPhoto(specialty.name)
+  const [failedSrc, setFailedSrc] = useState('')
+  return <Link to={`/doctors?specialtyId=${specialty.specialtyId}`} aria-label={`Khám phá bác sĩ chuyên khoa ${specialty.name}`} className="catalog-specialty-card group flex h-full flex-col items-start rounded-2xl border border-teal-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:border-teal-300 hover:shadow-md motion-reduce:transform-none sm:p-5">
+    <span className="catalog-specialty-media">{failedSrc !== photo.src ? <img src={photo.src} alt={`Ảnh minh họa: ${photo.alt}`} width={photo.width} height={photo.height} loading="lazy" decoding="async" style={{ objectPosition: photo.position }} onError={() => setFailedSrc(photo.src)} /> : <span className="catalog-specialty-fallback" aria-hidden="true"><Icon className="size-10" /></span>}</span>
     <h3 className="mt-4 text-sm font-bold leading-6 text-slate-900 group-hover:text-teal-800 sm:text-base">{specialty.name}</h3>
     <span className="mt-auto inline-flex items-center gap-1.5 pt-3 text-xs font-semibold text-slate-500 group-hover:text-teal-700">Khám phá bác sĩ <ArrowRight className="size-3.5" /></span>
   </Link>

@@ -53,3 +53,10 @@ test('Footer copy uses high-contrast neutrals and booking banner uses the second
   assert.match(theme, /\.public-site \.public-footer \.text-slate-300 \{ color: var\(--public-secondary\)/)
   assert.match(theme, /\.public-site \.public-booking-cta \{ background: var\(--public-secondary\)/)
 })
+
+test('Homepage doctor portraits have a neutral surface distinct from the mint section', () => {
+  const css = read('src/workspaces/public/pages/home-page.css')
+  assert.match(css, /\.fomed-home \.catalog-doctor-photo \{[^}]*background: #f6f8f7;[^}]*border-bottom:/)
+  assert.match(css, /\.fomed-home \.catalog-doctor-card \{[^}]*background: white;[^}]*box-shadow:/)
+  assert.doesNotMatch(css, /\.fomed-home \.catalog-doctor-photo \{[^}]*background: var\(--home-surface\)/)
+})
