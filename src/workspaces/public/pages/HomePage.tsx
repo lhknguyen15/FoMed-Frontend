@@ -62,7 +62,6 @@ export default function HomePage() {
       <section id="home-content" tabIndex={-1} className="home-hero" aria-labelledby="home-title">
         <div className={container + ' home-hero-grid'}>
           <div>
-            <p className="home-eyebrow"><span className="home-eyebrow-line" /> SỨC KHỎE CỦA BẠN, SỰ QUAN TÂM CỦA FOMED</p>
             <h1 id="home-title" className="home-title">Một lịch hẹn.<br /><span>Khởi đầu an tâm.</span></h1>
             <p className="home-intro">Tìm bác sĩ phù hợp, chủ động chọn giờ khám.<br className="hidden sm:block" /> FoMed cùng bạn chăm sóc sức khỏe, từ hôm nay.</p>
             <form role="search" onSubmit={(event) => { event.preventDefault(); navigate(search.trim() ? '/doctors?search=' + encodeURIComponent(search.trim()) : '/doctors') }} className="home-search">
@@ -84,7 +83,7 @@ export default function HomePage() {
 
       <section id="specialties" className="home-section scroll-mt-24">
         <div className={container}>
-          <SectionHeading eyebrow="CHỌN CHUYÊN KHOA" title="Chăm sóc đúng nhu cầu của bạn" description="Khám phá bác sĩ theo lĩnh vực bạn đang quan tâm." to="/specialties" linkLabel="Tất cả chuyên khoa" />
+          <SectionHeading title="Chăm sóc đúng nhu cầu của bạn" description="Khám phá bác sĩ theo lĩnh vực bạn đang quan tâm." to="/specialties" linkLabel="Tất cả chuyên khoa" />
           {sectionState(1, specialties.length, 'chuyên khoa') ?? <PublicCatalogCarousel label="chuyên khoa" variant="specialties">{specialties.map((specialty) => <SpecialtyPreviewCard key={specialty.specialtyId} specialty={specialty} />)}</PublicCatalogCarousel>}
           {!loading && !failedSections.includes(1) && specialties.length > 0 && <details className="home-specialty-credits"><summary>Ảnh minh họa · Nguồn: Pexels</summary><p>Ảnh minh họa hoạt động chăm sóc sức khỏe, không phải nhân sự hoặc cơ sở thực tế của FoMed.</p><ul>{specialtyPhotos.map(photo => <li key={photo.key}><a href={photo.source} target="_blank" rel="noopener noreferrer">{photo.author} · {photo.alt}<span className="sr-only"> (mở ảnh gốc trong thẻ mới)</span></a></li>)}</ul></details>}
         </div>
@@ -92,14 +91,14 @@ export default function HomePage() {
 
       <section id="doctors" className="home-section home-section-tinted scroll-mt-24">
         <div className={container}>
-          <SectionHeading eyebrow="ĐỘI NGŨ BÁC SĨ" title="Tìm người đồng hành cùng sức khỏe" description="Xem hồ sơ, chuyên khoa và phí khám để lựa chọn phù hợp." to="/doctors" linkLabel="Tất cả bác sĩ" />
+          <SectionHeading title="Tìm người đồng hành cùng sức khỏe" description="Xem hồ sơ, chuyên khoa và phí khám để lựa chọn phù hợp." to="/doctors" linkLabel="Tất cả bác sĩ" />
           {sectionState(0, doctors.length, 'bác sĩ') ?? <PublicCatalogCarousel label="bác sĩ" variant="doctors">{doctors.map((doctor) => <DoctorPreviewCard key={doctor.doctorId} doctor={doctor} />)}</PublicCatalogCarousel>}
         </div>
       </section>
 
       <section id="services" className="home-section scroll-mt-24">
         <div className={container}>
-          <SectionHeading eyebrow="DỊCH VỤ & BẢNG GIÁ" title="Thông tin rõ ràng trước buổi khám" description="Tham khảo các dịch vụ đang có trong danh mục FoMed." to="/services" linkLabel="Xem tất cả dịch vụ" />
+          <SectionHeading title="Thông tin rõ ràng trước buổi khám" description="Tham khảo các dịch vụ đang có trong danh mục FoMed." to="/services" linkLabel="Xem tất cả dịch vụ" />
           {sectionState(2, services.length, 'dịch vụ') ?? <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{services.slice(0, 6).map((service) => <ServicePreviewCard key={service.id} service={service} />)}</div>}
           <p className="mt-5 text-xs leading-5 text-slate-500">Danh mục hiển thị thông tin tham khảo. Chỉ định dịch vụ cụ thể được thực hiện trong quá trình thăm khám.</p>
         </div>
@@ -109,19 +108,19 @@ export default function HomePage() {
         <div className={container}>
           <div className="home-about-grid">
           <figure className="home-about-visual"><div className="home-about-photo"><HomePhoto src={waitingRoomPhoto} alt="Ảnh minh họa: không gian chờ sáng, có ghế ngồi và quầy tiếp đón" width={1200} height={800} /></div><figcaption className="home-photo-credit">Không gian minh họa, không phải cơ sở FoMed · <a href="https://www.pexels.com/photo/waiting-room-in-a-hospital-8459996/" target="_blank" rel="noopener noreferrer">Los Muertos Crew / Pexels<span className="sr-only"> (mở trong thẻ mới)</span></a></figcaption></figure>
-          <div><span className="text-xs font-bold uppercase tracking-[.15em] text-teal-700">VỀ FOMED</span><h2 className="mt-2 font-display text-2xl font-bold leading-snug text-slate-950">Không chỉ là một lịch hẹn</h2><p className="mt-4 text-sm leading-7 text-slate-600">FoMed kết nối việc đặt khám với quá trình theo dõi thông tin sau buổi khám. Tài khoản bệnh nhân giúp bạn quản lý những dữ liệu được ghi nhận trong hệ thống ở một nơi.</p><Link to="/register" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-teal-700 hover:text-teal-900">Tạo tài khoản bệnh nhân <ArrowRight className="size-4" /></Link></div>
+          <div><h2 className="home-section-title">Không chỉ là một lịch hẹn</h2><p className="mt-4 text-sm leading-7 text-slate-600">FoMed kết nối việc đặt khám với quá trình theo dõi thông tin sau buổi khám. Tài khoản bệnh nhân giúp bạn quản lý những dữ liệu được ghi nhận trong hệ thống ở một nơi.</p><Link to="/register" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-teal-700 hover:text-teal-900">Tạo tài khoản bệnh nhân <ArrowRight className="size-4" /></Link></div>
           </div>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[
-            { icon: CalendarCheck2, title: 'Quản lý lịch hẹn', text: 'Theo dõi thời gian khám và trạng thái lịch hẹn.', color: 'bg-teal-100 text-teal-800' },
-            { icon: ClipboardList, title: 'Theo dõi bệnh án', text: 'Xem các hồ sơ khám được ghi nhận cho bạn.', color: 'bg-teal-100 text-teal-800' },
-            { icon: FileText, title: 'Đơn thuốc & kết quả', text: 'Tra cứu thông tin trong hồ sơ khám của mình.', color: 'bg-teal-100 text-teal-800' },
-            { icon: Wallet, title: 'Thông tin hóa đơn', text: 'Theo dõi hóa đơn và trạng thái thanh toán.', color: 'bg-teal-100 text-teal-800' },
-          ].map(({ icon: Icon, title, text, color }) => <article key={title} className="home-benefit"><span className={'grid size-10 place-items-center rounded-xl ' + color}><Icon className="size-5" /></span><h3 className="mt-3 text-sm font-bold text-slate-900">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{text}</p></article>)}</div>
+          <ul className="home-benefits" aria-label="Thông tin có thể theo dõi trong tài khoản FoMed">{[
+            { icon: CalendarCheck2, title: 'Lịch hẹn', text: 'Thời gian khám và trạng thái lịch hẹn.' },
+            { icon: ClipboardList, title: 'Bệnh án', text: 'Thông tin các buổi khám được ghi nhận.' },
+            { icon: FileText, title: 'Đơn thuốc & kết quả', text: 'Hướng dẫn và kết quả trong hồ sơ khám.' },
+            { icon: Wallet, title: 'Hóa đơn', text: 'Chi phí khám và trạng thái thanh toán.' },
+          ].map(({ icon: Icon, title, text }) => <li key={title} className="home-benefit"><Icon aria-hidden="true" /><span><strong>{title}</strong><span>{text}</span></span></li>)}</ul>
         </div>
       </section>
 
       <section id="how-it-works" className="home-section scroll-mt-24">
-        <div className={container}><div className="max-w-2xl"><p className="home-eyebrow">BẮT ĐẦU THẬT ĐƠN GIẢN</p><h2 className="home-section-title">3 bước để đặt lịch khám</h2><p className="mt-3 text-sm leading-6 text-slate-600">Chuẩn bị cho buổi khám, từ việc lựa chọn bác sĩ đến gửi yêu cầu đặt lịch.</p></div>
+        <div className={container}><div className="max-w-2xl"><h2 className="home-section-title">3 bước để đặt lịch khám</h2><p className="mt-3 text-sm leading-6 text-slate-600">Chuẩn bị cho buổi khám, từ việc lựa chọn bác sĩ đến gửi yêu cầu đặt lịch.</p></div>
           <div className="mt-7 grid gap-4 md:grid-cols-3">{[
             { number: '01', title: 'Tìm bác sĩ phù hợp', text: 'Tìm theo tên hoặc khám phá danh sách bác sĩ của từng chuyên khoa.', to: '/doctors', action: 'Khám phá bác sĩ', icon: Search },
             { number: '02', title: 'Đăng nhập tài khoản', text: 'Đăng nhập hoặc tạo tài khoản bệnh nhân để tiếp tục đặt lịch.', to: '/login', action: 'Đăng nhập', icon: ClipboardList },
@@ -131,7 +130,7 @@ export default function HomePage() {
       </section>
 
       <section id="faq" className="home-section home-section-tinted scroll-mt-24">
-        <div className={container + ' grid gap-7 lg:grid-cols-[.7fr_1.3fr]'}><div><p className="text-xs font-bold uppercase tracking-[.15em] text-teal-700">GIẢI ĐÁP NHANH</p><h2 className="mt-2 font-display text-2xl font-bold text-slate-950">Bạn cần thêm thông tin?</h2><p className="mt-3 text-sm leading-6 text-slate-500">Một vài hướng dẫn trước khi bắt đầu sử dụng FoMed.</p><a href="#how-it-works" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-teal-700">Xem hướng dẫn đặt khám <ArrowRight className="size-4" /></a></div><div className="space-y-3">{faqs.map(({ question, answer }, index) => <details key={question} open={index === 0 ? true : undefined} className="group rounded-2xl border border-slate-200 bg-white"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-sm font-semibold leading-6 text-slate-800 [&::-webkit-details-marker]:hidden">{question}<ChevronDown className="size-4 shrink-0 text-teal-700 transition group-open:rotate-180" /></summary><p className="px-5 pb-5 text-sm leading-7 text-slate-500">{answer}</p></details>)}</div></div>
+        <div className={container + ' grid gap-7 lg:grid-cols-[.7fr_1.3fr]'}><div><h2 className="home-section-title">Bạn cần thêm thông tin?</h2><p className="mt-3 text-sm leading-6 text-slate-500">Một vài hướng dẫn trước khi bắt đầu sử dụng FoMed.</p><a href="#how-it-works" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-teal-700">Xem hướng dẫn đặt khám <ArrowRight className="size-4" /></a></div><div className="space-y-3">{faqs.map(({ question, answer }, index) => <details key={question} open={index === 0 ? true : undefined} className="group rounded-2xl border border-slate-200 bg-white"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-sm font-semibold leading-6 text-slate-800 [&::-webkit-details-marker]:hidden">{question}<ChevronDown className="size-4 shrink-0 text-teal-700 transition group-open:rotate-180" /></summary><p className="px-5 pb-5 text-sm leading-7 text-slate-500">{answer}</p></details>)}</div></div>
       </section>
     </main>
     <PublicFooter />
@@ -144,8 +143,8 @@ function HomePhoto({ src, alt, width, height, priority = false }: { src: string;
   return <img className="home-stock-photo" src={src} alt={alt} width={width} height={height} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'auto'} decoding="async" onError={() => setFailed(true)} />
 }
 
-function SectionHeading({ eyebrow, title, description, to, linkLabel }: { eyebrow: string; title: string; description: string; to: string; linkLabel: string }) {
-  return <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div className="max-w-2xl"><p className="home-eyebrow">{eyebrow}</p><h2 className="home-section-title">{title}</h2><p className="mt-3 text-sm leading-6 text-slate-600">{description}</p></div><Link to={to} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-teal-700 bg-transparent px-4 py-2.5 text-xs font-semibold text-teal-800 transition hover:bg-teal-700 hover:text-white sm:self-auto">{linkLabel}<ArrowRight className="size-4" /></Link></div>
+function SectionHeading({ title, description, to, linkLabel }: { title: string; description: string; to: string; linkLabel: string }) {
+  return <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div className="max-w-2xl"><h2 className="home-section-title">{title}</h2><p className="mt-3 text-sm leading-6 text-slate-600">{description}</p></div><Link to={to} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-teal-700 bg-transparent px-4 py-2.5 text-xs font-semibold text-teal-800 transition hover:bg-teal-700 hover:text-white sm:self-auto">{linkLabel}<ArrowRight className="size-4" /></Link></div>
 }
 
 function CatalogSkeleton() {
